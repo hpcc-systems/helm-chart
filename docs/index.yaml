@@ -2,8 +2,19 @@ apiVersion: v1
 entries:
   hpcc:
   - apiVersion: v2
+    appVersion: 7.8.22-rc1
+    created: "2020-06-11T16:43:38.123768+01:00"
+    description: An example Helm chart for launching a HPCC cluster using Kubernetes
+    digest: 64774f0f276e45fa41fa95d9259f9c0e2f217cb65aa25b5e7b1723827645c1b1
+    icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
+    name: hpcc
+    type: application
+    urls:
+    - https://hpcc-systems.github.io/helm-chart/hpcc-7.8.22-rc1.tgz
+    version: 7.8.22-rc1
+  - apiVersion: v2
     appVersion: 0.1.0
-    created: "2020-04-29T09:43:45.604542+01:00"
+    created: "2020-06-11T16:43:38.122533+01:00"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: ae055195586e9544c9a490510697cb8f3a43a14ccbb118a7d706423ce914a7d8
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -12,4 +23,4 @@ entries:
     urls:
     - https://hpcc-systems.github.io/helm-chart/hpcc-0.1.0.tgz
     version: 0.1.0
-generated: "2020-04-29T09:43:45.602457+01:00"
+generated: "2020-06-11T16:43:38.120583+01:00"

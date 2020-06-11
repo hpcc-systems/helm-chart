@@ -1,0 +1,89 @@
+{{ range $.Values.dali -}}
+{{- if not .disabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .name | quote }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: {{ .name | quote }}
+  template:
+    metadata:
+      labels:
+        run: {{ .name | quote }}
+    spec:
+      {{- include "hpcc.checkDaliMount" (dict "root" $) | indent 6 }}
+      containers:
+      - name: {{ .name | quote }}
+        args: [
+                {{ include "hpcc.configArg" . }}
+              ]
+{{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 8 }}
+{{ include "hpcc.addImageAttrs" (dict "root" $ "me" . "imagename" "dali") | indent 8 }}
+        volumeMounts:
+        - name: {{ .name }}-configmap-volume
+          mountPath: /etc/config
+        - name: dalistorage-pv
+          mountPath: "/var/lib/HPCCSystems/dalistorage"
+      volumes:
+      - name: {{ .name }}-configmap-volume
+        configMap:
+          name: {{ .name }}-configmap
+      - name: dalistorage-pv
+        persistentVolumeClaim:
+          claimName: {{ $.Values.storage.daliStorage.existingClaim | default (printf "%s-%s-dalistorage-pvc" (include "hpcc.fullname" $) .name) }}
+---
+kind: ConfigMap 
+apiVersion: v1 
+metadata:
+  name: {{ .name }}-configmap 
+data:
+  {{ .name }}.yaml: |
+    version: 1.0
+    dali:
+{{ toYaml (omit . "logging") | indent 6 }}
+{{- include "hpcc.generateLoggingConfig" (dict "root" $ "me" .) | indent 6 }}
+    global:
+{{ include "hpcc.generateGlobalConfigMap" $ | indent 6 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name | quote }}
+spec:
+  ports:
+  - port: 7070
+    protocol: TCP
+    targetPort: 7070
+  selector:
+    run: {{ .name | quote }}
+  type: ClusterIP
+---
+{{- if (not $.Values.storage.daliStorage.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ printf "%s-%s-dalistorage-pvc" (include "hpcc.fullname" $) .name }}
+  labels:
+    app.kubernetes.io/name: {{ printf "%s-%s-dalistorage-pvc" (include "hpcc.fullname" $) .name }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    helm.sh/chart: {{ include "hpcc.chart" $ }}
+spec:
+  accessModes:
+    - ReadWriteMany  # accessed from dali and sasha
+  resources:
+    requests:
+      storage: {{ $.Values.storage.daliStorage.storageSize }}
+{{- if $.Values.storage.daliStorage.storageClass }}
+{{- if (eq "-" $.Values.storage.daliStorage.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ $.Values.storage.daliStorage.storageClass }}"
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

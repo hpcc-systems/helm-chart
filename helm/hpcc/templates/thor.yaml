@@ -1,0 +1,228 @@
+{{ range $thor := $.Values.thor -}}
+{{- if not $thor.disabled -}}
+{{- $hthorName := printf "%s-hthor" .name }}
+{{- $eclAgentName := printf "%s-agent" .name }}
+{{- $thorAgentName := printf "%s-thoragent" .name }}
+{{- $slaveName := printf "%s-slave" .name }}
+{{- $serviceName := printf "%s-svc" .name }}
+{{- $eclAgentDefaults := dict "name" $eclAgentName "useChildProcesses" true "replicas" 1 }}
+{{- $eclAgentScope := .eclagent | mergeOverwrite $eclAgentDefaults | default $eclAgentDefaults }}
+{{- $agentAppType := $eclAgentScope.type | default "hthor" }}
+{{- $thorAgentDefaults := dict "name" $thorAgentName "useChildProcesses" false "replicas" 1 }}
+{{- $thorAgentScope := .thoragent | mergeOverwrite $thorAgentDefaults | default $thorAgentDefaults }}
+{{- $hthorDefaults := dict "name" $hthorName }}
+{{- $hthorScope := .eclagent | mergeOverwrite $hthorDefaults | default $hthorDefaults }}
+{{- $thorScopeStd := omit . "eclagent" "thoragent" "hthor" }}
+{{- $thorScope := $thorAgentScope.useChildProcesses | ternary ($thorScopeStd | mergeOverwrite (dict "masterport" 0 "slaveport" 0)) ($thorScopeStd) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $eclAgentName | quote }}
+spec:
+  replicas: {{ $eclAgentScope.replicas }}
+  selector:
+    matchLabels:
+      run: {{ $eclAgentName | quote }}
+  template:
+    metadata:
+      labels:
+        run: {{ $eclAgentName | quote }}
+    spec:
+      serviceAccountName: hpcc
+      containers:
+      - name: {{ $eclAgentName | quote }}
+        args: [
+                {{ include "hpcc.configArg" . }},
+                {{ include "hpcc.daliArg" $ }},
+                {{ printf "\"--name=%s\"" .name }}
+              ]
+{{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 8 }}
+{{ include "hpcc.addImageAttrs" (dict "root" $ "me" . "imagename" "eclagent") | indent 8 }}
+        volumeMounts:
+{{ include "hpcc.addConfigMapVolumeMount" . | indent 8 }}
+{{ include "hpcc.addDataVolumeMount" . | indent 8 }}
+{{ include "hpcc.addDllVolumeMount" . | indent 8 }}
+      volumes:
+{{ include "hpcc.addConfigMapVolume" . | indent 6 }}
+{{ include "hpcc.addDataVolume" $ | indent 6 }}
+{{ include "hpcc.addDllVolume" $ | indent 6 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $thorAgentName | quote }}
+spec:
+  replicas: {{ $thorAgentScope.replicas }}
+  selector:
+    matchLabels:
+      run: {{ $thorAgentName | quote }}
+  template:
+    metadata:
+      labels:
+        run: {{ $thorAgentName | quote }}
+    spec:
+      serviceAccountName: hpcc
+      containers:
+      - name: {{ $thorAgentName | quote }}
+        args: [
+                {{ include "hpcc.configArg" $thorAgentScope }},
+                {{ include "hpcc.daliArg" $ }},
+                {{ printf "\"--name=%s\"" .name }}
+              ]
+{{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 8 }}
+{{ include "hpcc.addImageAttrs" (dict "root" $ "me" . "imagename" "eclagent") | indent 8 }}
+        volumeMounts:
+{{ include "hpcc.addConfigMapVolumeMount" . | indent 8 }}
+{{ include "hpcc.addDataVolumeMount" . | indent 8 }}
+{{ include "hpcc.addDllVolumeMount" . | indent 8 }}
+      volumes:
+{{ include "hpcc.addConfigMapVolume" . | indent 6 }}
+{{ include "hpcc.addDataVolume" $ | indent 6 }}
+{{ include "hpcc.addDllVolume" $ | indent 6 }}
+---
+kind: ConfigMap 
+apiVersion: v1 
+metadata:
+  name: {{ $thorScope.name }}-configmap 
+data:
+  {{ $thorScope.name }}.yaml: |
+    version: 1.0
+    thor:
+{{ toYaml (omit $thorScope "logging") | indent 6 }}
+{{- include "hpcc.generateLoggingConfig" (dict "root" $ "me" $thorScope) | indent 6 }}
+    {{ $agentAppType }}:
+{{- if $thorScope.multiJobLinger }}
+      multiJobLinger: true
+{{- end }}
+{{ toYaml (omit $hthorScope "logging") | indent 6 }}
+      platform:
+        type: "thor"
+        width: {{ $thor.numSlaves }}
+{{- include "hpcc.generateLoggingConfig" (dict "root" $ "me" $hthorScope) | indent 6 }}
+    eclagent: # main agent Q handler
+{{ toYaml (omit $eclAgentScope "logging") | indent 6 }}
+{{- include "hpcc.generateLoggingConfig" (dict "root" $ "me" $eclAgentScope) | indent 6 }}
+    global:
+{{ include "hpcc.generateGlobalConfigMap" $ | indent 6 }}
+
+  {{ $thorAgentScope.name }}.yaml: |
+    version: 1.0
+    eclagent:
+{{ toYaml (omit $thorAgentScope "logging") | indent 6 }}
+{{- include "hpcc.generateLoggingConfig" (dict "root" $ "me" $thorAgentScope) | indent 6 }}
+      type: thor
+{{- if $thorAgentScope.useChildProcesses }}
+    thor:
+{{ toYaml (omit $thorScope "logging") | indent 6 }}
+{{- include "hpcc.generateLoggingConfig" (dict "root" $ "me" $thorScope) | indent 6 }}
+{{- end }}
+    global:
+{{ include "hpcc.generateGlobalConfigMap" $ | indent 6 }}
+{{- if not $eclAgentScope.useChildProcesses }}
+
+  {{ $agentAppType }}-jobspec.yaml: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: %jobname
+    spec:
+      ttlSecondsAfterFinished: 100
+      template:
+        spec:
+          serviceAccountName: hpcc
+          {{- include "hpcc.checkDataMount" (dict "root" $) | indent 10 }}
+          containers:
+          - name: %jobname
+{{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 12 }}
+            image: {{ include "hpcc.imageName" (dict "root" $ "me" . "imagename" "eclagent") }}
+            resources:
+              requests:
+                #request-memory
+                #request-cpu
+              limits:
+                #limit-memory
+                #limit-cpu
+            command: [
+                        {{ $agentAppType | quote }},
+                        {{ include "hpcc.configArg" . }},
+                        {{ include "hpcc.daliArg" $ }},
+                        %args
+                     ]
+            volumeMounts:
+{{ include "hpcc.addConfigMapVolumeMount" . | indent 12 }}
+{{ include "hpcc.addDataVolumeMount" . | indent 12 }}
+{{ include "hpcc.addDllVolumeMount" . | indent 12 }}
+          volumes:
+{{ include "hpcc.addConfigMapVolume" . | indent 10 }}
+{{ include "hpcc.addDataVolume" $ | indent 10 }}
+{{ include "hpcc.addDllVolume" $ | indent 10 }}
+          restartPolicy: Never
+      backoffLimit: 0
+{{- end }}
+{{- if not $thorAgentScope.useChildProcesses }}
+
+  thormaster-jobspec.yaml: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: %jobname
+    spec:
+      ttlSecondsAfterFinished: 100
+      template:
+        spec:
+          serviceAccountName: hpcc
+          {{- include "hpcc.checkDataMount" (dict "root" $) | indent 10 }}
+          containers:
+          - name: %jobname
+{{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 12 }}
+{{ include "hpcc.addImageAttrs" (dict "root" $ "me" . "imagename" "thormaster") | indent 12 }}
+            args: [
+                    {{ include "hpcc.configArg" . }},
+                    {{ include "hpcc.daliArg" $ }},
+                    %args
+                  ]
+            volumeMounts:
+{{ include "hpcc.addConfigMapVolumeMount" . | indent 12 }}
+{{ include "hpcc.addDataVolumeMount" . | indent 12 }}
+{{ include "hpcc.addDllVolumeMount" . | indent 12 }}
+          volumes:
+{{ include "hpcc.addConfigMapVolume" . | indent 10 }}
+{{ include "hpcc.addDataVolume" $ | indent 10 }}
+{{ include "hpcc.addDllVolume" $ | indent 10 }}
+          restartPolicy: Never
+      backoffLimit: 0
+{{- end }}
+
+  thorslave-jobspec.yaml: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: %jobname
+    spec:
+      parallelism: {{ $thor.numSlaves }}
+      ttlSecondsAfterFinished: 100
+      template:
+        spec:
+          serviceAccountName: hpcc
+          containers:
+          - name: %jobname
+{{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 12 }}
+{{ include "hpcc.addImageAttrs" (dict "root" $ "me" . "imagename" "thorslave") | indent 12 }}
+            args: [
+                    {{ include "hpcc.configArg" . }},
+                    {{ include "hpcc.daliArg" $ }},
+                    %args
+                  ]
+            volumeMounts:
+{{ include "hpcc.addConfigMapVolumeMount" . | indent 12 }}
+{{ include "hpcc.addDataVolumeMount" . | indent 12 }}
+{{ include "hpcc.addDllVolumeMount" . | indent 12 }}
+          volumes:
+{{ include "hpcc.addConfigMapVolume" . | indent 10 }}
+{{ include "hpcc.addDataVolume" $ | indent 10 }}
+{{ include "hpcc.addDllVolume" $ | indent 10 }}
+          restartPolicy: Never
+      backoffLimit: 0
+---
+{{- end }}
+{{- end }}

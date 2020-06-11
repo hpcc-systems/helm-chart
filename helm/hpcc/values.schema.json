@@ -1,0 +1,332 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "global": {
+      "$ref": "#/definitions/global"
+    },
+    "storage": {
+      "type": "object",
+      "properties": {
+        "dllStorage": {
+          "$ref": "#/definitions/storageType"
+        },
+        "dataStorage": {
+          "$ref": "#/definitions/storageType"
+        },
+        "daliStorage": {
+          "$ref": "#/definitions/storageType"
+        }
+      },
+      "additionalProperties": false
+    },
+    "dali": {
+      "description": "dali process",
+      "type": "array",
+      "items": { "$ref": "#/definitions/dali" }
+    },
+    "eclccserver": {
+      "description": "eclccserver process",
+      "type": "array",
+      "items": { "$ref": "#/definitions/eclccserver" }
+    },
+    "esp": {
+      "description": "esp process",
+      "type": "array",
+      "items": { "$ref": "#/definitions/esp" }
+    },
+    "eclagent": {
+      "description": "eclagent process",
+      "type": "array",
+      "items": {
+        "allOf": [
+          { "$ref": "#/definitions/eclagent" },
+          {
+            "name": {
+              "type": "string",
+              "description": "The name of the eclagent process"
+            },
+            "prefix": {
+              "type": "string",
+              "description": "The (optional) file prefix to add to relative filenames"
+            },
+            "required": [ "name" ]
+          }
+        ]
+      }
+    },
+    "roxie": {
+      "description": "eclagent process",
+      "type": "array",
+      "items": { "$ref": "#/definitions/roxie" }
+    },
+    "thor": {
+      "description": "thor process",
+      "type": "array",
+      "items": { "$ref": "#/definitions/thor" }
+    }
+  },
+  "required": [
+    "dali"
+  ],
+  "title": "Values",
+  "type": "object",
+  "definitions": {
+    "global": {
+      "type": "object",
+      "properties": {
+        "privileged": {
+          "type": "boolean"
+        },
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "logging": {
+          "$ref": "#/definitions/logging"
+        },
+        "defaultEsp": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "root": {
+          "type": "string",
+          "default": "hpccsystems"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": ["IfNotPresent", "Always", "Never"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "storageType": {
+      "type": "object",
+      "properties": {
+        "storageSize": {
+          "type": "string"
+        },
+        "storageClass": {
+          "type": "string"
+        },
+        "existingClaim": {
+          "type": "string"
+        },
+        "forcePermissions": {
+          "type": "boolean"
+        }
+      },
+      "required": [ "storageSize" ],
+      "additionalProperties": false
+    },
+    "logging": {
+      "type": "object",
+      "properties": {
+        "audiences": {
+          "type": "string",
+          "description": "List of target audiences to include in logging output. Comprised of 3 letter codes delimited by + or -"
+        },
+        "classes": {
+          "type": "string",
+          "description": "List of target logging classes to include in output. Comprised of 3 letter codes delimited by + or -"
+        },
+        "detail": {
+          "type": "integer",
+          "description": "Log output verbosity"
+        }
+      },
+      "additionalProperties": { "type": ["integer", "string", "boolean"] }
+    },
+    "dali": {
+      "type": "object",
+      "required": [ "name" ],
+      "additionalProperties": { "type": ["integer", "string", "boolean"] },
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the dali process"
+        },
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "logging": {
+          "$ref": "#/definitions/logging"
+        }
+      }
+    },
+    "eclccserver": {
+      "type": "object",
+      "required": [ "name" ],
+      "additionalProperties": { "type": ["integer", "string", "boolean"] },
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the eclccserver process"
+        },
+        "replicas": {
+          "type": "integer"
+        },
+        "listen": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "useChildProcesses": {
+          "type": "boolean",
+          "description": "Launch each workunit compile as a child process rather than in its own container"
+        },
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "logging": {
+          "$ref": "#/definitions/logging"
+        }
+      }
+    },
+    "esp": {
+      "type": "object",
+      "required": [ "name" ],
+      "additionalProperties": { "type": ["integer", "string", "boolean"] },
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the esp process"
+        },
+        "replicas": {
+          "type": "integer"
+        },
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "logging": {
+          "$ref": "#/definitions/logging"
+        }
+      }
+    },
+    "eclagent": {
+      "type": "object",
+      "additionalProperties": { "type": ["integer", "string", "boolean"] },
+      "properties": {
+        "replicas": {
+          "type": "integer"
+        },
+        "maxActive": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of workunits that can be active simultaneously",
+          "default": 100
+        },
+        "useChildProcesses": {
+          "type": "boolean",
+          "description": "Launch each workunit as a child process rather than in its own container"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["hthor", "roxie"],
+          "description": "Use the hthor or roxie execution engine for eclagent queries"
+        },
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "logging": {
+          "$ref": "#/definitions/logging"
+        }
+      }
+    },
+    "roxie": {
+      "type": "object",
+      "required": [ "name" ],
+      "additionalProperties": { "type": ["integer", "string", "boolean"] },
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the roxie process"
+        },
+        "prefix": {
+          "type": "string",
+          "description": "The (optional) file prefix to add to relative filenames"
+        },
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "logging": {
+          "$ref": "#/definitions/logging"
+        },
+        "services": {
+          "description": "Roxie query services",
+          "type": "array",
+          "items": { "$ref": "#/definitions/roxieservice" }
+        }
+      }
+    },
+    "roxieservice": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "numThreads": {
+          "type": "integer"
+        },
+        "listenQueue": {
+          "type": "integer"
+        },
+        "external": {
+          "type": "boolean"
+        }
+      },
+      "required": [ "name", "port" ],
+      "additionalProperties": false
+    },
+    "thor": {
+      "type": "object",
+      "required": [ "name" ],
+      "additionalProperties": { "type": ["integer", "string", "boolean"] },
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the thor process"
+        },
+        "prefix": {
+          "type": "string",
+          "description": "The (optional) file prefix to add to relative filenames"
+        },
+        "numSlaves": {
+          "type": "integer",
+          "description": "The number of slave pods",
+          "minimum": 1
+        },
+        "lingerPeriod": {
+          "type": "integer",
+          "description": "[Optional] Seconds to keep Thor instance running, waiting for more graphs to execute",
+          "minimum": 1
+        },
+        "multiJobLinger": {
+          "type": "boolean",
+          "description": "[Optional] If lingerPeriod set, allows Thor to process more graphs from any job"
+        },
+        "eclagent": {
+          "$ref": "#/definitions/eclagent"
+        },
+        "thoragent": {
+          "$ref": "#/definitions/eclagent"
+        },
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "logging": {
+          "$ref": "#/definitions/logging"
+        }
+      }
+    }
+  }
+}

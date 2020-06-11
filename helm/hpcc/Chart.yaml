@@ -1,0 +1,13 @@
+apiVersion: v2
+name: hpcc
+description: An example Helm chart for launching a HPCC cluster using Kubernetes
+icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+version: 7.8.22-rc1
+
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application.
+appVersion: 7.8.22-rc1
