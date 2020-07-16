@@ -50,7 +50,7 @@ storage:
     # forcePermissions: false
 
   dataStorage:
-    storageSize: 1Gi
+    storageSize: 100Gi
     storageClass: ""
     # existingClaim: ""
     # forcePermissions: false
@@ -115,10 +115,10 @@ roxie:
 
 thor:
 - name: thor
-  numSlaves: 2
+  numSlaves: 10
   globalMemorySize: 4096
   prefix: thor
   eclagent:
-    maxActive: 4
+    maxActive: 15
   thoragent:
     maxActive: 2
