@@ -1,5 +1,6 @@
 {{ range $.Values.esp -}}
 {{- if not .disabled -}}
+{{- $application := .application | default "eclwatch" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,20 +17,25 @@ spec:
     spec:
       containers:
       - name: {{ .name | quote }}
+        workingDir: /var/lib/HPCCSystems
+        command: [ esp ] 
         args: [
+                {{ printf "--application=%s" $application | quote }},
                 {{ include "hpcc.configArg" . }},
                 {{ include "hpcc.daliArg" $ }}
               ]
 {{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 8 }}
-{{ include "hpcc.addImageAttrs" (dict "root" $ "me" . "imagename" "esp") | indent 8 }}
+{{ include "hpcc.addImageAttrs" (dict "root" $ "me" .) | indent 8 }}
         volumeMounts:
 {{ include "hpcc.addConfigMapVolumeMount" . | indent 8 }}
 {{ include "hpcc.addDataVolumeMount" . | indent 8 }}
 {{ include "hpcc.addDllVolumeMount" . | indent 8 }}
+{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "all" "storage" ) ) | indent 8 }}
       volumes:
 {{ include "hpcc.addConfigMapVolume" . | indent 6 }}
 {{ include "hpcc.addDataVolume" $ | indent 6 }}
 {{ include "hpcc.addDllVolume" $ | indent 6 }}
+{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "all" "storage" ) ) | indent 6 }}
 ---
 kind: ConfigMap 
 apiVersion: v1 
@@ -52,12 +58,12 @@ metadata:
   name: {{ .name | quote }}
 spec:
   ports:
-  - port: 8010
+  - port: {{ required "servicePort must be specified" .servicePort }}
     protocol: TCP
-    targetPort: 8010
+    targetPort: {{ .port | default 8880 }}
   selector:
     run: {{ .name | quote }}
-  type: LoadBalancer
+  type: {{ .public | ternary "LoadBalancer" "ClusterIP" }}
 ---
 {{- end }}
 {{- end }}

@@ -50,18 +50,23 @@ Pass in root as .
 {{- $local := dict "defaultEsp" "" -}}
 imageVersion: {{ required "Please specify .global.image.version" .Values.global.image.version | quote }}
 singleNode: {{ .Values.global.singleNode | default false }}
-{{- if .Values.global.defaultEsp -}}
- {{- $_ := set $local "defaultEsp" .Values.global.defaultEsp -}}
-{{- else if hasPrefix "[]" (typeOf .Values.esp) -}}
- {{- range $key, $value := .Values.esp -}}
-  {{- if (not $value.disabled) -}}
-   {{- if (not $local.defaultEsp) -}}
-    {{- $_ := set $local "defaultEsp" $value.name -}}
-   {{- end -}} 
-  {{- end -}} 
- {{- end -}} 
-{{- end }} 
-defaultEsp: {{ $local.defaultEsp | quote }}
+defaultEsp: {{ .Values.global.defaultEsp | default ""}}
+{{ if hasPrefix "[]" (typeOf .Values.esp) -}}
+esp:
+{{ toYaml .Values.esp }}
+{{ end -}}
+secretTimeout: {{ .Values.secrets.timeout | default 300 }}
+storage:
+  ##The following is a temporary solution to allow blob storage to be tested
+  ##This will be completely rewritten and restructured to encompass the idea of multiple storage planes.
+  ##The source of the information is likely to be move to .Values.storage rather than .Values.global
+  default:
+{{- if .Values.global.defaultDataPath }}
+    data: {{ .Values.global.defaultDataPath }}
+{{- end }}
+{{- if .Values.global.defaultMirrorPath }}
+    mirror: {{ .Values.global.defaultMirrorPath }}
+{{- end }}
 {{- end -}}
 
 {{/*
@@ -129,6 +134,39 @@ Add dll volume
 {{- end -}}
 
 {{/*
+Add the secret volume mounts for a component
+*/}}
+{{- define "hpcc.addSecretVolumeMounts" -}}
+{{- $component := .component -}}
+{{- $categories := .categories -}}
+{{- range $category, $key := .root.Values.secrets -}}
+ {{- if (has $category $categories) -}}
+{{- range $secretid, $secretname := $key -}}
+- name: secret-{{ $secretid }}
+  mountPath: /opt/HPCCSystems/secrets/{{ $secretid }}
+{{ end -}}
+ {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Add Secret volume for a component
+*/}}
+{{- define "hpcc.addSecretVolumes" -}}
+{{- $component := .component -}}
+{{- $categories := .categories -}}
+{{- range $category, $key := .root.Values.secrets -}}
+ {{- if (has $category $categories) -}}
+{{- range $secretid, $secretname := $key -}}
+- name: secret-{{ $secretid }}
+  secret:
+    secretName: {{ $secretname }}
+{{ end -}}
+ {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Add config arg for a component
 */}}
 {{- define "hpcc.configArg" -}}
@@ -146,11 +184,11 @@ Add dali arg for a component
 Get image name
 */}}
 {{- define "hpcc.imageName" -}}
-{{- /* Pass in a dictionary with root, me and imagename defined */ -}}
+{{- /* Pass in a dictionary with root and me defined */ -}}
 {{- if .me.image -}}
-{{ .me.image.root | default .root.Values.global.image.root | default "hpccsystems" }}/{{ .imagename }}:{{ .me.image.version | default .root.Values.global.image.version }}
+{{ .me.image.root | default .root.Values.global.image.root | default "hpccsystems" }}/{{ .me.image.name | default .root.Values.global.image.name | default "platform-core" }}:{{ .me.image.version | default .root.Values.global.image.version }}
 {{- else -}}
-{{ .root.Values.global.image.root | default "hpccsystems" }}/{{ .imagename }}:{{ .root.Values.global.image.version }}
+{{ .root.Values.global.image.root | default "hpccsystems" }}/{{ .root.Values.global.image.name | default "platform-core" }}:{{ .root.Values.global.image.version }}
 {{- end -}}
 {{- end -}}
 
@@ -171,7 +209,6 @@ imagePullPolicy: {{ .root.Values.global.image.pullPolicy | default "IfNotPresent
 A kludge to ensure mounted storage (e.g. for nfs, minikube or docker for desktop) has correct permissions for PV
 */}}
 {{- define "hpcc.changeMountPerms" -}}
-initContainers:
 # This is a bit of a hack, to ensure that the persistent storage mounted is writable.
 # This is only required when mounting a remote filing systems from another container or machine.
 # NB: this includes where the filing system is on the containers host machine .
@@ -216,6 +253,27 @@ Check dalistorage mount point, using hpcc.changeMountPerms
 {{ include "hpcc.changeMountPerms" (dict "root" .root "volumeName" "dalistorage-pv" "volumePath" "/var/lib/HPCCSystems/dalistorage") }}
 {{- end }}
 {{- end }}
+
+{{/*
+Add any bundles
+*/}}
+{{- define "hpcc.addBundles" -}}
+{{- $in := . -}}
+{{- range .root.Values.bundles }}
+- name: add-bundle-{{ .name | lower }}
+{{ include "hpcc.addImageAttrs" $in | indent 2 }}
+  command: [
+           "ecl-bundle",
+           "install",
+           "--remote",
+           "{{ .name }}"
+           ]
+  volumeMounts:
+  - name: "hpccbundles"
+    mountPath: "/home/hpcc/.HPCCSystems"
+{{- end }}
+{{- end }}
+
 
 {{/*
 Add security context

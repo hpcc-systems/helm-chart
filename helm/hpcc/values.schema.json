@@ -20,6 +20,30 @@
       },
       "additionalProperties": false
     },
+    "secrets": {
+      "description": "configuration for secrets accessed by the components",
+      "type": "object",
+      "properties": {
+        "timeout": {
+          "type": "integer"
+        },
+        "storage": {
+          "$ref": "#/definitions/secrets"
+        },
+        "ecl": {
+          "$ref": "#/definitions/secrets"
+        },
+        "all": {
+          "$ref": "#/definitions/secrets"
+        }
+      },
+      "additionalProperties": false
+    },
+    "bundles": {
+      "description": "bundles",
+      "type": "array",
+      "items": { "$ref": "#/definitions/bundle" }
+    },
     "dali": {
       "description": "dali process",
       "type": "array",
@@ -86,6 +110,12 @@
         },
         "defaultEsp": {
           "type": "string"
+        },
+        "defaultDataPath": {
+          "type": "string"
+        },
+        "defaultMirrorPath": {
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -125,6 +155,17 @@
       },
       "required": [ "storageSize" ],
       "additionalProperties": false
+    },
+    "secrets": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "logging": {
       "type": "object",
@@ -286,6 +327,17 @@
       },
       "required": [ "name", "port" ],
       "additionalProperties": false
+    },
+    "bundle": {
+      "type": "object",
+      "required": [ "name" ],
+      "additionalProperties": { "type": ["integer", "string", "boolean"] },
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the bundle process"
+        }
+      }
     },
     "thor": {
       "type": "object",
