@@ -5,6 +5,9 @@
     "global": {
       "$ref": "#/definitions/global"
     },
+    "hostgroups": {
+      "$ref": "#/definitions/hostgroups"
+    },
     "storage": {
       "type": "object",
       "properties": {
@@ -16,6 +19,19 @@
         },
         "daliStorage": {
           "$ref": "#/definitions/storageType"
+        },
+        "spillStorage": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/storageType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "planes": {
+          "$ref": "#/definitions/storagePlanes"
         }
       },
       "additionalProperties": false
@@ -33,8 +49,30 @@
         "ecl": {
           "$ref": "#/definitions/secrets"
         },
-        "all": {
+        "system": {
           "$ref": "#/definitions/secrets"
+        }
+      },
+      "additionalProperties": false
+    },
+    "vaults": {
+      "description": "configuration for vaults accessed by the components",
+      "type": "object",
+      "properties": {
+        "timeout": {
+          "type": "integer"
+        },
+        "storage": {
+          "$ref": "#/definitions/vaultCategory"
+        },
+        "esp": {
+          "$ref": "#/definitions/vaultCategory"
+        },
+        "ecl": {
+          "$ref": "#/definitions/vaultCategory"
+        },
+        "ecl-user": {
+          "$ref": "#/definitions/vaultCategory"
         }
       },
       "additionalProperties": false
@@ -74,6 +112,14 @@
               "type": "string",
               "description": "The (optional) file prefix to add to relative filenames"
             },
+            "storagePlane": {
+              "description": "The default storage plane to write data files to",
+              "type": "string"
+            },
+            "spillPlane": {
+              "description": "The storage plane to write spill files to",
+              "type": "string"
+            },
             "required": [ "name" ]
           }
         ]
@@ -108,6 +154,9 @@
         "logging": {
           "$ref": "#/definitions/logging"
         },
+        "egress": {
+          "$ref": "#/definitions/egress"
+        },
         "defaultEsp": {
           "type": "string"
         },
@@ -130,6 +179,10 @@
           "type": "string",
           "default": "hpccsystems"
         },
+        "name": {
+          "type": "string",
+          "default": "platform-core"
+        },
         "pullPolicy": {
           "type": "string",
           "enum": ["IfNotPresent", "Always", "Never"]
@@ -146,6 +199,9 @@
         "storageClass": {
           "type": "string"
         },
+        "plane": {
+          "type": "string"
+        },
         "existingClaim": {
           "type": "string"
         },
@@ -153,8 +209,71 @@
           "type": "boolean"
         }
       },
-      "required": [ "storageSize" ],
+      "anyOf": [
+        {
+          "required": [ "storageSize" ]
+        },
+        {
+          "required": [ "plane" ]
+        }
+      ],
       "additionalProperties": false
+    },
+    "storagePlanes": {
+      "description": "storage plane definitions",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": { "$ref": "#/definitions/storagePlane" }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "storagePlane": {
+      "description": "information about an individual storage plane",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "the name of the storage plane",
+          "type": "string"
+        },
+        "prefix": {
+          "description": "either the path for a local mount, or the url prefix",
+          "type": "string"
+        },
+        "secret": {
+          "description": "optional name of any secret required to access this storage plane",
+          "type": "string"
+        },
+        "pvc": {
+          "description": "optional name of the persistent volume claim for this plane",
+          "type": "string"
+        },
+        "hosts": {
+          "description": "optional name of the host group (for bare metal storage)",
+          "type": "string"
+        },
+        "numDevices": {
+          "description": "optional number of devices in the storage plane (default 1)",
+          "type": "integer"
+        },
+        "includeDeviceInPath": {
+          "description": "is a directory based on the part number appended to the path.  May not be needed",
+          "type": "boolean"
+        },
+        "replication": {
+          "description": "which planes (if any) the data is replicated onto (primarily bare metal)",
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": [ "name", "prefix" ],
+      "additionalProperties": false
+    },
+    "resources": {
+      "type": "object"
     },
     "secrets": {
       "oneOf": [
@@ -164,6 +283,88 @@
         },
         {
           "type": "null"
+        }
+      ]
+    },
+    "vaultCategory": {
+      "description": "set of vaults under a given category",
+      "oneOf": [
+        {
+            "type": "array",
+            "items": { "$ref": "#/definitions/vault" }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "vault": {
+      "description": "information about an individual vault",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "the name of the vault",
+          "type": "string"
+        },
+        "url": {
+          "description": "the url used to access the vault",
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["kv-v2", "kv-v1"]
+        },
+        "client-secret": {
+          "description": "optional name of kubernetes secret that will provide the vault client token",
+          "type": "string"
+        }
+      },
+      "required": [ "name", "url" ],
+      "additionalProperties": false
+    },
+    "hostgroups": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/hostgroup"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "hostgroup": {
+      "oneOf": [
+        {
+          "description": "a list of host names",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        {
+          "description": "a subset of an existing host group",
+          "type": "object",
+          "properties": {
+            "group": {
+              "description": "Name of the hostgroup to create a subset of",
+              "type": "string"
+            },
+            "count": {
+              "description": "Number of hosts in the subset",
+              "type": "integer"
+            },
+            "offset": {
+              "description": "Offset of the first host within the group",
+              "type": "integer"
+            },
+            "delta": {
+              "type": "integer",
+              "description": "Cycle offsset to apply to the hosts"
+            }
+          },
+          "required": [ "group" ],
+          "additionalProperties": false
         }
       ]
     },
@@ -185,6 +386,28 @@
       },
       "additionalProperties": { "type": ["integer", "string", "boolean"] }
     },
+    "egress": {
+      "type": "object",
+      "properties": {
+        "restricted": {
+          "description": "Are any egress controls applied",
+          "type": "boolean"
+        },
+        "kubeApiCidr": {
+          "description": "IP range for kubectl API service",
+          "type": "string"
+        },
+        "kubeApiPort": {
+          "description": "Port used for connections to kubectl API",
+          "type": "integer"
+        },
+        "kubeSystemLabel": {
+          "type": "string",
+          "description": "Label that has been applied to the kube-system namespace, used to restrict DNS service calls on port 53 to pods in the kube-system namespace"
+        }
+      },
+      "additionalProperties": false
+    },
     "dali": {
       "type": "object",
       "required": [ "name" ],
@@ -199,6 +422,9 @@
         },
         "logging": {
           "$ref": "#/definitions/logging"
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
         }
       }
     },
@@ -227,6 +453,9 @@
         },
         "logging": {
           "$ref": "#/definitions/logging"
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
         }
       }
     },
@@ -247,6 +476,9 @@
         },
         "logging": {
           "$ref": "#/definitions/logging"
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
         }
       }
     },
@@ -277,6 +509,13 @@
         },
         "logging": {
           "$ref": "#/definitions/logging"
+        },
+        "storagePlane": {
+          "description": "The default storage plane to write data files to",
+          "type": "string"
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
         }
       }
     },
@@ -303,6 +542,20 @@
           "description": "Roxie query services",
           "type": "array",
           "items": { "$ref": "#/definitions/roxieservice" }
+        },
+        "storagePlane": {
+          "description": "The default storage plane to write data files to",
+          "type": "string"
+        },
+        "spillPlane": {
+          "description": "The storage plane to write spill files to",
+          "type": "string"
+        },
+        "serverResources": {
+          "$ref": "#/definitions/resources"
+        },
+        "channelResources": {
+          "$ref": "#/definitions/resources"
         }
       }
     },
@@ -352,9 +605,9 @@
           "type": "string",
           "description": "The (optional) file prefix to add to relative filenames"
         },
-        "numSlaves": {
+        "numWorkers": {
           "type": "integer",
-          "description": "The number of slave pods",
+          "description": "The number of worker pods",
           "minimum": 1
         },
         "lingerPeriod": {
@@ -377,6 +630,23 @@
         },
         "logging": {
           "$ref": "#/definitions/logging"
+        },
+        "storagePlane": {
+          "description": "The default storage plane to write data files to",
+          "type": "string"
+        },
+        "spillPlane": {
+          "description": "The storage plane to write spill files to",
+          "type": "string"
+        },
+        "managerResources": {
+          "$ref": "#/definitions/resources"
+        },
+        "workerResources": {
+          "$ref": "#/definitions/resources"
+        },
+        "eclAgentResources": {
+          "$ref": "#/definitions/resources"
         }
       }
     }

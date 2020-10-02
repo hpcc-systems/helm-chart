@@ -1,5 +1,6 @@
 {{ range $.Values.eclagent -}}
 {{- if not .disabled -}}
+{{- include "hpcc.checkDefaultStoragePlane" (dict "root" $ "me" . )}}
 {{- $apptype := .type | default "hthor" -}} 
 apiVersion: apps/v1
 kind: Deployment
@@ -14,8 +15,10 @@ spec:
     metadata:
       labels:
         run: {{ .name | quote }}
+        accessDali: "yes"
+        accessEsp: {{ .useChildProcesses | default false | ternary "yes" "no" | quote }}
     spec:
-      serviceAccountName: hpcc
+      serviceAccountName: {{ .useChildProcesses | default false | ternary "hpcc-default" "hpcc-agent" }}
       initContainers:
         {{- include "hpcc.checkDataMount" (dict "root" $) | indent 6 }}
       containers:
@@ -27,17 +30,22 @@ spec:
                 {{ include "hpcc.daliArg" $ }}
               ]
 {{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 8 }}
+{{- if .useChildProcesses }}
+{{- include "hpcc.addResources" (dict "me" .resources) | indent 8 }}
+{{- else }}
+{{- include "hpcc.addStubResources" . | indent 8 }}
+{{- end }}
 {{ include "hpcc.addImageAttrs" (dict "root" $ "me" .) | indent 8 }}
         volumeMounts:
 {{ include "hpcc.addConfigMapVolumeMount" . | indent 8 }}
-{{ include "hpcc.addDataVolumeMount" . | indent 8 }}
-{{ include "hpcc.addDllVolumeMount" . | indent 8 }}
-{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 8 }}
+{{ include "hpcc.addDataVolumeMount" (dict "root" $ "me" . ) | indent 8 }}
+{{ include "hpcc.addDllVolumeMount" $ | indent 8 }}
+{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 8 }}
       volumes:
 {{ include "hpcc.addConfigMapVolume" . | indent 6 }}
-{{ include "hpcc.addDataVolume" $ | indent 6 }}
+{{ include "hpcc.addDataVolume" (dict "root" $ "me" . ) | indent 6 }}
 {{ include "hpcc.addDllVolume" $ | indent 6 }}
-{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 6 }}
+{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 6 }}
 ---
 kind: ConfigMap 
 apiVersion: v1 
@@ -52,28 +60,29 @@ data:
     {{ $apptype }}:
 {{ toYaml (omit . "logging") | indent 6 }}
 {{- include "hpcc.generateLoggingConfig" (dict "root" $ "me" .) | indent 6 }}
+{{ include "hpcc.generateVaultConfig" (dict "root" $ "categories" (list "storage" "ecl" "ecl-user" ) ) | indent 6 }}
     global:
 {{ include "hpcc.generateGlobalConfigMap" $ | indent 6 }}
+{{- if not .useChildProcesses }} 
   {{ $apptype }}-jobspec.yaml: |
     apiVersion: batch/v1
     kind: Job
     metadata:
-      name: %jobname
+      name: {{ $apptype }}-%jobname
     spec:
       ttlSecondsAfterFinished: 100
       template:
+        metadata:
+          labels:
+            accessDali: "yes"
+            accessEsp: "yes"
         spec:
+          serviceAccountName: "hpcc-default"
           containers:
-          - name: %jobname
+          - name: {{ $apptype }}-%jobname
 {{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 12 }}
 {{ include "hpcc.addImageAttrs" (dict "root" $ "me" .) | indent 12 }}
-            resources:
-              requests:
-                #request-memory
-                #request-cpu
-              limits:
-                #limit-memory
-                #limit-cpu
+{{- include "hpcc.addResources" (dict "me" .resources) | indent 12 }}
             workingDir: /var/lib/HPCCSystems
             command: [ {{ $apptype | quote }} ]
             args: [
@@ -83,17 +92,17 @@ data:
                      ]
             volumeMounts:
 {{ include "hpcc.addConfigMapVolumeMount" . | indent 12 }}
-{{ include "hpcc.addDataVolumeMount" . | indent 12 }}
-{{ include "hpcc.addDllVolumeMount" . | indent 12 }}
-{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 12 }}
+{{ include "hpcc.addDataVolumeMount" (dict "root" $ "me" . ) | indent 12 }}
+{{ include "hpcc.addDllVolumeMount" $ | indent 12 }}
+{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 12 }}
           volumes:
 {{ include "hpcc.addConfigMapVolume" . | indent 10 }}
-{{ include "hpcc.addDataVolume" $ | indent 10 }}
+{{ include "hpcc.addDataVolume" (dict "root" $ "me" . ) | indent 10 }}
 {{ include "hpcc.addDllVolume" $ | indent 10 }}
-{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 10 }}
+{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 10 }}
           restartPolicy: Never
       backoffLimit: 0
-      
+{{- end }}      
 ---
 {{- end }}
 {{- end }}

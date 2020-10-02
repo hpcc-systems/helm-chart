@@ -1,5 +1,6 @@
 {{ range $roxie := $.Values.roxie -}}
 {{- if not $roxie.disabled  -}}
+{{- include "hpcc.checkDefaultStoragePlane" (dict "root" $ "me" $roxie )}}
 {{- if $roxie.localAgent -}}
 {{- $name := $roxie.name -}}
 {{- $servername := printf "%s-server" $roxie.name -}}
@@ -18,7 +19,10 @@ spec:
       labels:
         run: {{ $roxie.name | quote }}
         roxie-server: {{ $servername | quote }}
+        accessDali: "yes"
+        accessEsp: "yes"
     spec:
+      serviceAccountName: "hpcc-default"
       initContainers:
         {{- include "hpcc.checkDataMount" (dict "root" $) | indent 6 }}
       containers:
@@ -44,17 +48,18 @@ spec:
 {{- end }}
 {{- end }}
 {{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 8 }}
+{{- include "hpcc.addResources" (dict "me" $roxie.resources) | indent 8 }}
 {{ include "hpcc.addImageAttrs" (dict "root" $ "me" .) | indent 8 }}
         volumeMounts:
 {{ include "hpcc.addConfigMapVolumeMount" . | indent 8 }}
-{{ include "hpcc.addDataVolumeMount" . | indent 8 }}
-{{ include "hpcc.addDllVolumeMount" . | indent 8 }}
-{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 8 }}
+{{ include "hpcc.addDataVolumeMount" (dict "root" $ "me" . ) | indent 8 }}
+{{ include "hpcc.addDllVolumeMount" $ | indent 8 }}
+{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 8 }}
       volumes:
 {{ include "hpcc.addConfigMapVolume" . | indent 6 }}
-{{ include "hpcc.addDataVolume" $ | indent 6 }}
+{{ include "hpcc.addDataVolume" (dict "root" $ "me" . ) | indent 6 }}
 {{ include "hpcc.addDllVolume" $ | indent 6 }}
-{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 6 }}
+{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 6 }}
 ---
 {{- range $service := $roxie.services }}
 {{- if ne (int $service.port)  0 }}
@@ -63,6 +68,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ $name | quote }}
+  labels:
+    type: roxie-service
 spec:
   ports:
   - port: {{ $service.port }}
@@ -84,6 +91,7 @@ data:
     roxie:
 {{ toYaml (omit $roxie "logging") | indent 6 }}
 {{- include "hpcc.generateLoggingConfig" (dict "root" $ "me" $roxie) | indent 6 }}
+{{ include "hpcc.generateVaultConfig" (dict "root" $ "categories" (list "storage" "ecl" "ecl-user" ) ) | indent 6 }}
     global:
 {{ include "hpcc.generateGlobalConfigMap" $ | indent 6 }}
 ---

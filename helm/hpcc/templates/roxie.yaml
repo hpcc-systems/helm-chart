@@ -1,5 +1,6 @@
 {{ range $roxie := $.Values.roxie -}}
 {{- if not $roxie.disabled -}}
+{{- include "hpcc.checkDefaultStoragePlane" (dict "root" $ "me" $roxie )}}
 {{- if not $roxie.localAgent -}}
 {{- $toponame := printf "%s-toposerver" $roxie.name -}}
 {{- $numChannels := $roxie.numChannels | int | default 1 -}}
@@ -19,10 +20,14 @@ spec:
     metadata:
       labels:
         run: {{ $toponame | quote }}
+        roxie-cluster: {{ $roxie.name | quote }}
     spec:
+      serviceAccountName: "hpcc-default"
       containers:
       - name: {{ $toponame | quote }}
+{{ include "hpcc.addSentinelProbes" $roxie | indent 8 }}
 {{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 8 }}
+{{- include "hpcc.addStubResources" . | indent 8 }}
 {{ include "hpcc.addImageAttrs" (dict "root" $ "me" $roxie) | indent 8 }}
         workingDir: /var/lib/HPCCSystems
         command: [ toposerver ] 
@@ -37,11 +42,12 @@ spec:
 
 {{- range $service := $roxie.services }}
 {{- if ne (int $service.port)  0 }}
-{{- $name := printf "%s-%s" $roxie.name $service.name }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $name | quote }}
+  name: {{ $service.name | quote }}
+  labels:
+    type: roxie-service
 spec:
   ports:
   - port: {{ $service.port }}
@@ -69,6 +75,30 @@ spec:
   clusterIP: None # Headless service
 
 ---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $roxie.name | quote }}
+spec:
+  podSelector:
+    matchLabels:
+      roxie-cluster: {{ $roxie.name | quote }}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          roxie-cluster: {{ $roxie.name | quote }}
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          roxie-cluster: {{ $roxie.name | quote }}
+
+---
 kind: ConfigMap 
 apiVersion: v1 
 metadata:
@@ -78,7 +108,11 @@ data:
     version: 1.0
     roxie:
 {{ toYaml ( omit $roxie "logging") | indent 6 }}
+      numChannels: {{ $numChannels }}
+      topologyServers: "{{ $toponame }}:{{ $topoport }}"
+      resolveLocally: false
 {{- include "hpcc.generateLoggingConfig" (dict "root" $ "me" $roxie) | indent 6 }}
+{{ include "hpcc.generateVaultConfig" (dict "root" $ "categories" (list "storage" "ecl" "ecl-user" ) ) | indent 6 }}
     global:
 {{ include "hpcc.generateGlobalConfigMap" $ | indent 6 }}
 ---
@@ -98,7 +132,11 @@ spec:
       labels:
         run: {{ $servername | quote }}
         roxie-server: {{ $servername | quote }}
+        roxie-cluster: {{ $roxie.name | quote }}
+        accessDali: "yes"
+        accessEsp: "yes"
     spec:
+      serviceAccountName: "hpcc-default"
       initContainers:
         {{- include "hpcc.checkDataMount" (dict "root" $) | indent 6 }}
       containers:
@@ -108,10 +146,7 @@ spec:
         args: [
                 {{ include "hpcc.configArg" . }},
                 {{ include "hpcc.daliArg" $ }},
-                "--numChannels={{ $numChannels }}",
-                "--server=true", 
-                "--topologyServers={{ $toponame }}:{{ $roxie.topoport }}",
-                "--resolveLocally=false"
+                "--server=true" 
               ]
 {{- $local := dict "first" true }}
 {{- range $service := $roxie.services }}
@@ -124,18 +159,20 @@ spec:
           containerPort: {{ $service.port }}
 {{- end }}
 {{- end }}
+{{ include "hpcc.addSentinelProbes" $roxie | indent 8 }}
 {{ include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 8 }}
+{{- include "hpcc.addResources" (dict "me" $roxie.serverResources) | indent 8 }}
 {{ include "hpcc.addImageAttrs" (dict "root" $ "me" $roxie) | indent 8 }}
         volumeMounts:
 {{ include "hpcc.addConfigMapVolumeMount" $roxie | indent 8 }}
-{{ include "hpcc.addDataVolumeMount" . | indent 8 }}
-{{ include "hpcc.addDllVolumeMount" . | indent 8 }}
-{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 8 }}
+{{ include "hpcc.addDataVolumeMount" (dict "root" $ "me" . ) | indent 8 }}
+{{ include "hpcc.addDllVolumeMount" $ | indent 8 }}
+{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 8 }}
       volumes:
 {{ include "hpcc.addConfigMapVolume" $roxie | indent 6 }}
-{{ include "hpcc.addDataVolume" $ | indent 6 }}
+{{ include "hpcc.addDataVolume" (dict "root" $ "me" . ) | indent 6 }}
 {{ include "hpcc.addDllVolume" $ | indent 6 }}
-{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 6 }}
+{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 6 }}
 ---
 
 {{ end -}}
@@ -159,7 +196,11 @@ spec:
 {{- if not $roxie.serverReplicas }}        
         roxie-server: {{ $servername | quote }}
 {{- end }}
+        roxie-cluster: {{ $roxie.name | quote }}
+        accessDali: "yes"
+        accessEsp: "yes"
     spec:
+      serviceAccountName: "hpcc-default"
       initContainers:
         {{- include "hpcc.checkDataMount" (dict "root" $) | indent 6 }}
       containers:
@@ -171,9 +212,6 @@ spec:
                 {{ include "hpcc.daliArg" $ }},
                 "--channels={{ $channel }}", 
                 "--server={{ not $roxie.serverReplicas }}",
-                "--numChannels={{ $numChannels }}",
-                "--topologyServers={{ $toponame }}:{{ $roxie.topoport }}",
-                "--resolveLocally=false"
               ]
 {{- if not $roxie.serverReplicas }}
 {{- $local := dict "first" true }}
@@ -187,19 +225,21 @@ spec:
           containerPort: {{ $service.port }}
 {{- end }}
 {{- end }}
+{{ include "hpcc.addSentinelProbes" $roxie | indent 8 }}
 {{- end }}
 {{ include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 8 }}
+{{- include "hpcc.addResources" (dict "me" $roxie.channelResources) | indent 8 }}
 {{ include "hpcc.addImageAttrs" (dict "root" $ "me" $roxie) | indent 8 }}
         volumeMounts:
 {{ include "hpcc.addConfigMapVolumeMount" $roxie | indent 8 }}
-{{ include "hpcc.addDataVolumeMount" $roxie | indent 8 }}
-{{ include "hpcc.addDllVolumeMount" $roxie | indent 8 }}
-{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 8 }}
+{{ include "hpcc.addDataVolumeMount" (dict "root" $ "me" $roxie ) | indent 8 }}
+{{ include "hpcc.addDllVolumeMount" $ | indent 8 }}
+{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 8 }}
       volumes:
 {{ include "hpcc.addConfigMapVolume" $roxie | indent 6 }}
-{{ include "hpcc.addDataVolume" $ | indent 6 }}
+{{ include "hpcc.addDataVolume" (dict "root" $ "me" $roxie ) | indent 6 }}
 {{ include "hpcc.addDllVolume" $ | indent 6 }}
-{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 6 }}
+{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 6 }}
 
 ---
 
