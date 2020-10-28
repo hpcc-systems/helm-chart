@@ -17,22 +17,6 @@ global:
   # If not specified, the first esp component that exposes eclservices application is assumed.
   # Can also be overridden locally in individual components
   ## defaultEsp: eclservices
-  
-  egress:
-    ## If restricted is set, NetworkPolicies will include egress restrictions to allow connections from pods only to the minimum required by the system
-    ## Set to false to disable all egress policy restrictions (not recommended)
-    restricted: true
-    
-    ## The kube-system namespace is not generally labelled by default - to enable more restrictive egress control for dns lookups we need to be told the label
-    ## If not provided, DNS lookups on port 53 will be allowed to connect anywhere
-    ## The namespace may be labelled using a command such as "kubectl label namespace kube-system name=kube-system"
-    # kubeSystemLabel: "kube-system"
-
-    ## To properly allow access to the kubectl API from pods that need it, the cidr of the kubectl endpoint needs to be supplied
-    ## This may be obtained via "kubectl get endpoints --namespace default kubernetes"
-    ## If these are not supplied, egress controls will allow access to any IPs/ports from any pod where API access is needed
-    # kubeApiCidr: 172.17.0.3/32  
-    # kubeApiPort: 7443
 
 ## storage:
 ##
@@ -52,16 +36,6 @@ global:
 ## minikube and docker for desktop), or using NFS mounted storage.
 
 storage:
-  planes:
-  #   name: <required>
-  #   prefix: <path>                        # Root directory for accessing the plane (if pvc defined), or url to access plane.
-  #   numDevices: 1                         # number of devices that are part of the plane
-  #   replication: nullptr                  # a list or single item indicating which planes the data should be replicated onto
-  #   includeDeviceInPath: false            # Is the device number appended to the mount for the physical path for a file?  (Only required in unusual situations)
-  #   hosts: <name>                         # Name of the host group for bare metal - must match the name of the storage plane..
-  #   secret: <secret-id>                   # what secret is required to access the files.  This could optionally become a list if required (or add secrets:).
-  #   options:                              # not sure if it is needed
-
   dllStorage:
     storageSize: 3Gi
     storageClass: ""
@@ -89,39 +63,17 @@ secrets:
   #timeout: 300 # timeout period for cached secrets.  Should be similar to the k8s refresh period.
 
   #Secret categories follow, remove the {} if a secret is defined in a section
-  storage:
+  storage: {}
     ## Secrets that are required for accessing storage.  Currently exposed in the engines, but in the future will
     ## likely be restricted to esp (when it becomes the meta-data provider)
     ## For example, to set the secret associated with the azure storage account "mystorageaccount" use
     ##azure-mystorageaccount: storage-myazuresecret
 
-  ecl:
+  ecl: {}
     ## Category for secrets published to all components that run ecl
 
-  system:
-    ## Category for secrets published to all components for system level useage
-
-## The vaults section mirrors the secret section but leverages vault for the storage of secrets.
-## There is an additional category for vaults named "ecl-user".  In the future "ecl-user" vault
-## secrets will be readable directly from ECL code.  Other secret categories are read internally
-## by system components and not exposed directly to ECL code.
-##
-## For each vault:
-##   name is the name that is is accessed by within the platform
-##   url is the url used to read a secret from the vault.
-##   kind is the type of vault being accessed, or the protocol to use to access the secrets
-##   client_secret a kubernetes level secret that contains the client_token used to retrive secrets.
-##       if a client_secret is not provided "vault kubernetes auth" will be attempted.
-
-vaults:
-  storage:
-
-  ecl:
-
-  ecl-user:
-    #ECL code will have direct access to these secrets
-
-  esp:
+  all: {}
+    ## Category for secrets published to all components
 
 bundles: []
 ## Specifying bundles here will cause the indicated bundles to be downloaded and installed automatically
@@ -131,9 +83,6 @@ bundles: []
 
 dali:
 - name: mydali
-  #resources:
-  #  cpu: "1"
-  #  memory: "4G"
 
 eclagent:
 - name: hthor
@@ -147,21 +96,14 @@ eclagent:
   useChildProcesses: false
   ## type may be 'hthor' (the default) or 'roxie', to specify that the roxie engine rather than the hthor engine should be used for eclagent workunit processing
   type: hthor
-  ## The following resources apply to child hThor pods when useChildProcesses=false, otherwise they apply to hThor pod.
-  #resources:
-  #  cpu: "1"
-  #  memory: "1G"
 
-- name: roxie-workunit
+- name: roxie
   replicas: 1
-  prefix: roxie_workunit
+  prefix: roxie
   maxActive: 20
   useChildProcesses: true
   type: roxie
-  #resources:
-  #  cpu: "1"
-  #  memory: "1G"
-
+    
 eclccserver:
 - name: myeclccserver
   replicas: 1
@@ -171,10 +113,6 @@ eclccserver:
   maxActive: 4
   ## Specify a list of queues to listen on if you don't want this eclccserver listening on all queues. If empty or missing, listens on all queues
   listen: []
-  ## The following resources apply to child compile pods when useChildProcesses=false, otherwise they apply to eclccserver pod.
-  #resources:
-  #  cpu: "1"
-  #  memory: "4G"
     
 esp:
 - name: eclwatch
@@ -189,9 +127,6 @@ esp:
   servicePort: 8010
   ## Specify public: true if you want the service available from outside the cluster. Typically, eclwatch and wsecl are published externally, while eclservices is designed for internal use.
   public: true
-  #resources:
-  #  cpu: "1"
-  #  memory: "2G"
 
 - name: eclservices
   application: eclservices
@@ -200,9 +135,6 @@ esp:
   replicas: 1
   servicePort: 8010
   public: false
-  #resources:
-  #  cpu: "250m"
-  #  memory: "1G"
 
 - name: eclqueries
   application: eclqueries
@@ -211,20 +143,6 @@ esp:
   replicas: 1
   public: true
   servicePort: 8002
-  #resources:
-  #  cpu: "250m"
-  #  memory: "1G"
-
-- name: esdl-sandbox
-  application: esdl-sandbox
-  auth: none
-  tls: off
-  replicas: 1
-  public: true
-  servicePort: 8899
-  #resources:
-  #  cpu: "250m"
-  #  memory: "1G"
 
 - name: sql2ecl
   application: sql2ecl
@@ -233,49 +151,34 @@ esp:
   replicas: 1
   public: true
   servicePort: 8510
-  #resources:
-  #  cpu: "250m"
-  #  memory: "1G"
 
 roxie:
-- name: roxie
+- name: roxie-cluster
   disabled: false
-  prefix: roxie
+  prefix: roxiecluster
   services:
-  - name: roxie
+  - name: query
     port: 9876
     listenQueue: 200
     numThreads: 0
     external: true
+  - name: on-demand
+    port: 0
   numChannels: 2
   ## Set serverReplicas to indicate a separate replicaSet of roxie servers, with agent nodes not acting as servers
   serverReplicas: 0
   topoReplicas: 1
+  topoport: 9004
   ## Set localAgent to true for a scalable cluster of "single-node" roxie servers
   localAgent: false
   useAeron: false
-  #channelResources:
-  #  cpu: "4"
-  #  memory: "4G"
-  #serverResources:
-  #  cpu: "1"
-  #  memory: "1G"
 
 thor:
 - name: thor
-  numWorkers: 2
+  numSlaves: 2
   globalMemorySize: 4096
   prefix: thor
   eclagent:
     maxActive: 4
   thoragent:
     maxActive: 2
-  #managerResources:
-  #  cpu: "1"
-  #  memory: "2G"
-  #workerResources:
-  #  cpu: "4"
-  #  memory: "4G"
-  #eclAgentResources:
-  #  cpu: "1"
-  #  memory: "2G"

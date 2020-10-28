@@ -1,10 +1,9 @@
 {{ range $thor := $.Values.thor -}}
 {{- if not $thor.disabled -}}
-{{- include "hpcc.checkDefaultStoragePlane" (dict "root" $ "me" $thor) }}
 {{- $hthorName := printf "%s-hthor" .name }}
 {{- $eclAgentName := printf "%s-agent" .name }}
 {{- $thorAgentName := printf "%s-thoragent" .name }}
-{{- $workerName := printf "%s-worker" .name }}
+{{- $slaveName := printf "%s-slave" .name }}
 {{- $serviceName := printf "%s-svc" .name }}
 {{- $eclAgentDefaults := dict "name" $eclAgentName "useChildProcesses" true "replicas" 1 }}
 {{- $eclAgentScope := .eclagent | mergeOverwrite $eclAgentDefaults | default $eclAgentDefaults }}
@@ -28,10 +27,8 @@ spec:
     metadata:
       labels:
         run: {{ $eclAgentName | quote }}
-        accessDali: "yes"
-        accessEsp: {{ .useChildProcesses | default false | ternary "yes" "no" | quote }}
     spec:
-      serviceAccountName: {{ $eclAgentScope.useChildProcesses | default false | ternary "hpcc-default" "hpcc-agent" }}
+      serviceAccountName: hpcc
       containers:
       - name: {{ $eclAgentName | quote }}
         workingDir: /var/lib/HPCCSystems
@@ -42,22 +39,17 @@ spec:
                 {{ printf "\"--name=%s\"" .name }}
               ]
 {{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 8 }}
-{{- if .useChildProcesses }}
-{{- include "hpcc.addResources" (dict "me" $thorScope.eclAgentResources) | indent 8 }}
-{{- else }}
-{{- include "hpcc.addStubResources" . | indent 8 }}
-{{- end }}
 {{ include "hpcc.addImageAttrs" (dict "root" $ "me" .) | indent 8 }}
         volumeMounts:
 {{ include "hpcc.addConfigMapVolumeMount" . | indent 8 }}
-{{ include "hpcc.addDataVolumeMount" (dict "root" $ "me" . ) | indent 8 }}
-{{ include "hpcc.addDllVolumeMount" $ | indent 8 }}
-{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 8 }}
+{{ include "hpcc.addDataVolumeMount" . | indent 8 }}
+{{ include "hpcc.addDllVolumeMount" . | indent 8 }}
+{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 8 }}
       volumes:
 {{ include "hpcc.addConfigMapVolume" . | indent 6 }}
-{{ include "hpcc.addDataVolume" (dict "root" $ "me" . ) | indent 6 }}
+{{ include "hpcc.addDataVolume" $ | indent 6 }}
 {{ include "hpcc.addDllVolume" $ | indent 6 }}
-{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 6 }}
+{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 6 }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -72,10 +64,8 @@ spec:
     metadata:
       labels:
         run: {{ $thorAgentName | quote }}
-        accessDali: "yes"
-        accessEsp: {{ .useChildProcesses | default false | ternary "yes" "no" | quote }}
     spec:
-      serviceAccountName: {{ $thorAgentScope.useChildProcesses | default false | ternary "hpcc-default" "hpcc-thoragent" }}
+      serviceAccountName: hpcc
       containers:
       - name: {{ $thorAgentName | quote }}
         workingDir: /var/lib/HPCCSystems
@@ -86,20 +76,17 @@ spec:
                 {{ printf "\"--name=%s\"" .name }}
               ]
 {{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 8 }}
-{{- if not .useChildProcesses }}
-{{- include "hpcc.addStubResources" . | indent 8 }}
-{{- end }}
 {{ include "hpcc.addImageAttrs" (dict "root" $ "me" .) | indent 8 }}
         volumeMounts:
 {{ include "hpcc.addConfigMapVolumeMount" . | indent 8 }}
-{{ include "hpcc.addDataVolumeMount" (dict "root" $ "me" . ) | indent 8 }}
-{{ include "hpcc.addDllVolumeMount" $ | indent 8 }}
-{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 8 }}
+{{ include "hpcc.addDataVolumeMount" . | indent 8 }}
+{{ include "hpcc.addDllVolumeMount" . | indent 8 }}
+{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 8 }}
       volumes:
 {{ include "hpcc.addConfigMapVolume" . | indent 6 }}
-{{ include "hpcc.addDataVolume" (dict "root" $ "me" . ) | indent 6 }}
+{{ include "hpcc.addDataVolume" $ | indent 6 }}
 {{ include "hpcc.addDllVolume" $ | indent 6 }}
-{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 6 }}
+{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 6 }}
 ---
 kind: ConfigMap 
 apiVersion: v1 
@@ -111,7 +98,6 @@ data:
     thor:
 {{ toYaml (omit $thorScope "logging") | indent 6 }}
 {{- include "hpcc.generateLoggingConfig" (dict "root" $ "me" $thorScope) | indent 6 }}
-{{ include "hpcc.generateVaultConfig" (dict "root" $ "categories" (list "storage" "ecl" "ecl-user" ) ) | indent 6 }}
     {{ $agentAppType }}:
 {{- if $thorScope.multiJobLinger }}
       multiJobLinger: true
@@ -119,13 +105,11 @@ data:
 {{ toYaml (omit $hthorScope "logging") | indent 6 }}
       platform:
         type: "thor"
-        width: {{ mul (.numWorkers | default 1) ( .channelsPerWorker | default 1) }}
+        width: {{ $thor.numSlaves }}
 {{- include "hpcc.generateLoggingConfig" (dict "root" $ "me" $hthorScope) | indent 6 }}
-{{ include "hpcc.generateVaultConfig" (dict "root" $ "categories" (list "storage" "ecl" "ecl-user" ) ) | indent 6 }}
     eclagent: # main agent Q handler
 {{ toYaml (omit $eclAgentScope "logging") | indent 6 }}
 {{- include "hpcc.generateLoggingConfig" (dict "root" $ "me" $eclAgentScope) | indent 6 }}
-{{ include "hpcc.generateVaultConfig" (dict "root" $ "categories" (list "storage" "ecl" "ecl-user" ) ) | indent 6 }}
     global:
 {{ include "hpcc.generateGlobalConfigMap" $ | indent 6 }}
 
@@ -148,23 +132,25 @@ data:
     apiVersion: batch/v1
     kind: Job
     metadata:
-      name: {{ $agentAppType }}-%jobname
+      name: %jobname
     spec:
       ttlSecondsAfterFinished: 100
       template:
-        metadata:
-          labels:
-            accessDali: "yes"
-            accessEsp: "yes"
         spec:
-          serviceAccountName: {{ $thorAgentScope.useChildProcesses | default false | ternary "hpcc-default" "hpcc-agent" }}
+          serviceAccountName: hpcc
           initContainers: 
             {{- include "hpcc.checkDataMount" (dict "root" $) | indent 10 }}
           containers:
-          - name: {{ $agentAppType }}-%jobname
+          - name: %jobname
 {{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 12 }}
 {{ include "hpcc.addImageAttrs" (dict "root" $ "me" .) | indent 12 }}
-{{- include "hpcc.addResources" (dict "me" $thorScope.eclAgentResources) | indent 12 }}
+            resources:
+              requests:
+                #request-memory
+                #request-cpu
+              limits:
+                #limit-memory
+                #limit-cpu
             workingDir: /var/lib/HPCCSystems
             command: [ {{ $agentAppType | quote }} ] 
             args: [
@@ -174,42 +160,42 @@ data:
                      ]
             volumeMounts:
 {{ include "hpcc.addConfigMapVolumeMount" . | indent 12 }}
-{{ include "hpcc.addDataVolumeMount" (dict "root" $ "me" . ) | indent 12 }}
-{{ include "hpcc.addDllVolumeMount" $ | indent 12 }}
-{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 12 }}
+{{ include "hpcc.addDataVolumeMount" . | indent 12 }}
+{{ include "hpcc.addDllVolumeMount" . | indent 12 }}
+{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 12 }}
           volumes:
 {{ include "hpcc.addConfigMapVolume" . | indent 10 }}
-{{ include "hpcc.addDataVolume" (dict "root" $ "me" . ) | indent 10 }}
+{{ include "hpcc.addDataVolume" $ | indent 10 }}
 {{ include "hpcc.addDllVolume" $ | indent 10 }}
-{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 10 }}
+{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 10 }}
           restartPolicy: Never
       backoffLimit: 0
 {{- end }}
 {{- if not $thorAgentScope.useChildProcesses }}
 
-  thormanager-jobspec.yaml: |
+  thormaster-jobspec.yaml: |
     apiVersion: batch/v1
     kind: Job
     metadata:
-      name: thormanager-%jobname
+      name: %jobname
     spec:
       ttlSecondsAfterFinished: 100
       template:
-        metadata:
-          labels:
-            app: thor
-            accessDali: "yes"
-            accessEsp: "yes"
-            job: %jobname
         spec:
-          serviceAccountName: hpcc-agent
+          serviceAccountName: hpcc
           initContainers:
             {{- include "hpcc.checkDataMount" (dict "root" $) | indent 10 }}
           containers:
-          - name: thormanager-%jobname
+          - name: %jobname
 {{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 12 }}
 {{ include "hpcc.addImageAttrs" (dict "root" $ "me" .) | indent 12 }}
-{{- include "hpcc.addResources" (dict "me" $thorScope.managerResources) | indent 12 }}
+            resources:
+              requests:
+                #request-memory
+                #request-cpu
+              limits:
+                #limit-memory
+                #limit-cpu
             workingDir: /var/lib/HPCCSystems
             command: [ thormaster_lcr ] 
             args: [
@@ -219,38 +205,40 @@ data:
                   ]
             volumeMounts:
 {{ include "hpcc.addConfigMapVolumeMount" . | indent 12 }}
-{{ include "hpcc.addDataVolumeMount" (dict "root" $ "me" . ) | indent 12 }}
-{{ include "hpcc.addDllVolumeMount" $ | indent 12 }}
-{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 12 }}
+{{ include "hpcc.addDataVolumeMount" . | indent 12 }}
+{{ include "hpcc.addDllVolumeMount" . | indent 12 }}
+{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 12 }}
           volumes:
 {{ include "hpcc.addConfigMapVolume" . | indent 10 }}
-{{ include "hpcc.addDataVolume" (dict "root" $ "me" . ) | indent 10 }}
+{{ include "hpcc.addDataVolume" $ | indent 10 }}
 {{ include "hpcc.addDllVolume" $ | indent 10 }}
-{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 10 }}
+{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 10 }}
           restartPolicy: Never
       backoffLimit: 0
+{{- end }}
 
-  thorworker-jobspec.yaml: |
+  thorslave-jobspec.yaml: |
     apiVersion: batch/v1
     kind: Job
     metadata:
-      name: thorworker-%jobname
+      name: %jobname
     spec:
-      parallelism: %numWorkers
+      parallelism: %numSlaves
       ttlSecondsAfterFinished: 100
       template:
-        metadata:
-          labels:
-            app: thor
-            accessEsp: "true"
-            job: %jobname
         spec:
-          serviceAccountName: hpcc-default
+          serviceAccountName: hpcc
           containers:
-          - name: thorworker-%jobname
+          - name: %jobname
 {{- include "hpcc.addSecurityContext" (dict "root" $ "me" .) | indent 12 }}
 {{ include "hpcc.addImageAttrs" (dict "root" $ "me" .) | indent 12 }}
-{{- include "hpcc.addResources" (dict "me" $thorScope.workerResources) | indent 12 }}
+            resources:
+              requests:
+                #request-memory
+                #request-cpu
+              limits:
+                #limit-memory
+                #limit-cpu
             workingDir: /var/lib/HPCCSystems
             command: [ thorslave_lcr ] 
             args: [
@@ -260,40 +248,16 @@ data:
                   ]
             volumeMounts:
 {{ include "hpcc.addConfigMapVolumeMount" . | indent 12 }}
-{{ include "hpcc.addDataVolumeMount" (dict "root" $ "me" . ) | indent 12 }}
-{{ include "hpcc.addDllVolumeMount" $ | indent 12 }}
-{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 12 }}
+{{ include "hpcc.addDataVolumeMount" . | indent 12 }}
+{{ include "hpcc.addDllVolumeMount" . | indent 12 }}
+{{ include "hpcc.addSecretVolumeMounts" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 12 }}
           volumes:
 {{ include "hpcc.addConfigMapVolume" . | indent 10 }}
-{{ include "hpcc.addDataVolume" (dict "root" $ "me" . ) | indent 10 }}
+{{ include "hpcc.addDataVolume" $ | indent 10 }}
 {{ include "hpcc.addDllVolume" $ | indent 10 }}
-{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "system" "ecl" "storage" ) ) | indent 10 }}
+{{ include "hpcc.addSecretVolumes" (dict "root" $ "categories" (list "all" "ecl" "storage" ) ) | indent 10 }}
           restartPolicy: Never
       backoffLimit: 0
-
-  thormanager-networkspec.yaml: |
-    apiVersion: networking.k8s.io/v1
-    kind: NetworkPolicy
-    metadata:
-      name: thormanager-%jobname
-    spec:
-      podSelector:
-        matchLabels:
-          app: thor
-          job: %jobname
-      ingress:
-      - from:
-        - podSelector:
-            matchLabels:
-              app: thor
-              job: %jobname
-      egress:
-      - to:
-        - podSelector:
-            matchLabels:
-              app: thor
-              job: %jobname
-               
-{{- end }}
+---
 {{- end }}
 {{- end }}
