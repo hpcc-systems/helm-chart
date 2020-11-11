@@ -1,0 +1,43 @@
+#An example of a complex storage definition for a bare metal system
+hostgroups:
+  thor400: [ node1, node2, node3, node4, node5, node6, node400 ]
+  thor400m:
+    group: thor400
+    delta: 1
+  thor20_1:
+    group: thor400
+    count: 20
+    offset: 0
+  thor20_2:
+    group: thor400
+    count: 20
+    offset: 20
+  thor100_4:
+    group: thor400
+    count: 100
+    offset: 300
+
+storage:
+  planes:
+  #Bare metal system with attached storage
+  - name: thor400
+    prefix: /var/lib/hpccsystems/hpcc-data
+    hosts: thor400
+    replication: [ thor400mirror ]
+    #numDevices: count(hosts)
+  - name: thor400mirror
+    prefix: /var/lib/hpccsystems/hpcc-mirror
+    hosts: thor400mirror
+    #Does any other information about the replication policy need to be included?  I don't think it does....
+
+  - name: thor100_4
+    prefix: /var/lib/hpccsystems/hpcc-data
+    hosts: thor100_4
+    replication: [ azureBlobPlane ]
+
+  - name: azureBlobPlane
+    prefix: azure://ghallidaystorage      # Not sure if there should be a different tag for prefix v mount
+    secret: azure-ghallidaystorage
+
+  - name: localSpill
+    prefix: /tmp/hpcc/spill

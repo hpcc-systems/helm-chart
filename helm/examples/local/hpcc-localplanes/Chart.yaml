@@ -1,13 +1,12 @@
 apiVersion: v2
-name: hpcc
-description: A Helm chart for launching a HPCC cluster using Kubernetes
-icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
+name: hpcc-localplanes
+description: A helm chart to provision multiple HPCC PVC's using the 'host directories'
 type: application
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
-version: 7.12.6
+version: 0.1.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application.
-appVersion: 7.12.6
+appVersion: 1.16.0
