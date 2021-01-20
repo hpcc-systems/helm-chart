@@ -555,6 +555,7 @@ Generate instance queue names
 - name: {{ .name }}
   type: roxie 
   prefix: {{ .prefix | default "null" }}
+  queriesOnly: true
  {{- end }}
 {{ end -}}
 {{- range $.Values.thor -}}
@@ -564,7 +565,7 @@ Generate instance queue names
   prefix: {{ .prefix | default "null" }}
   width: {{ mul (.numWorkers | default 1) ( .channelsPerWorker | default 1) }}
  {{- end }}
-{{- end -}}
+{{ end -}}
 {{- end -}}
 
 {{/*
