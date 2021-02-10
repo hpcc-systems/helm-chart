@@ -2,8 +2,19 @@ apiVersion: v1
 entries:
   hpcc:
   - apiVersion: v2
+    appVersion: 7.12.26
+    created: "2021-02-10T13:30:36.355763Z"
+    description: A Helm chart for launching a HPCC cluster using Kubernetes
+    digest: 88b8f65501b108ab33d0a6b2af190af7bebbdf8b70000030cff8653008835f0f
+    icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
+    name: hpcc
+    type: application
+    urls:
+    - https://hpcc-systems.github.io/helm-chart/hpcc-7.12.26.tgz
+    version: 7.12.26
+  - apiVersion: v2
     appVersion: 7.12.26-rc1
-    created: "2021-02-10T13:28:23.731345Z"
+    created: "2021-02-10T13:30:36.354974Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: 8bff31c689f4c8987e422ebd7dc309df0edd2c15f2857876d1788a0b4eb48287
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -14,7 +25,7 @@ entries:
     version: 7.12.26-rc1
   - apiVersion: v2
     appVersion: 7.12.24
-    created: "2021-02-10T13:28:23.730557Z"
+    created: "2021-02-10T13:30:36.353902Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: aa814a1713178e7558f8a3004fe35b7e21736d4e594c34b0ba187ba93dfd1c3a
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -25,7 +36,7 @@ entries:
     version: 7.12.24
   - apiVersion: v2
     appVersion: 7.12.24-rc1
-    created: "2021-02-10T13:28:23.72976Z"
+    created: "2021-02-10T13:30:36.352823Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: 54eee2e0d645a8562739737f1902eaff957371b94e1a646efd78ff55bc74e988
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -36,7 +47,7 @@ entries:
     version: 7.12.24-rc1
   - apiVersion: v2
     appVersion: 7.12.22
-    created: "2021-02-10T13:28:23.728965Z"
+    created: "2021-02-10T13:30:36.351611Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: a30efd687c5a904f1b7c0dbedc462e25970f84d971703764db60f9b67f0c6b4b
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -47,7 +58,7 @@ entries:
     version: 7.12.22
   - apiVersion: v2
     appVersion: 7.12.22-rc1
-    created: "2021-02-10T13:28:23.728159Z"
+    created: "2021-02-10T13:30:36.35005Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: a9dad5a2fc27e7a15f46231a7a8f31606d7ba489e2705016f15cdc80587a64a1
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -58,7 +69,7 @@ entries:
     version: 7.12.22-rc1
   - apiVersion: v2
     appVersion: 7.12.20
-    created: "2021-02-10T13:28:23.727367Z"
+    created: "2021-02-10T13:30:36.348947Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: 9e7ba754f41c0b4f72ce5fc1d50e1b9bf03a491825606cfd2109a7c4868a8040
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -69,7 +80,7 @@ entries:
     version: 7.12.20
   - apiVersion: v2
     appVersion: 7.12.20-rc1
-    created: "2021-02-10T13:28:23.726577Z"
+    created: "2021-02-10T13:30:36.347833Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: 84a48725e6439f8418fce0402ecccacad8b0471d4cea7ff7f5ee343b7b5144fa
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -80,7 +91,7 @@ entries:
     version: 7.12.20-rc1
   - apiVersion: v2
     appVersion: 7.12.18
-    created: "2021-02-10T13:28:23.723778Z"
+    created: "2021-02-10T13:30:36.344545Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: a20c7db7b5d909bb0d7ad3e2cfe1e18b47a1e43678d30a777e8f5d4571497600
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -91,7 +102,7 @@ entries:
     version: 7.12.18
   - apiVersion: v2
     appVersion: 7.12.18-rc2
-    created: "2021-02-10T13:28:23.722995Z"
+    created: "2021-02-10T13:30:36.343209Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: fc9d83cbbae4a4408f7a58de89f62a64d7070a5741e87673b0f85c6ce484e4c1
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -102,7 +113,7 @@ entries:
     version: 7.12.18-rc2
   - apiVersion: v2
     appVersion: 7.12.18-rc1
-    created: "2021-02-10T13:28:23.722195Z"
+    created: "2021-02-10T13:30:36.3421Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: 8ca4dcc37c0fdc10ba79b6cf63c0e1fe4300d6cc54adce70234159ff87bdbb1f
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -113,7 +124,7 @@ entries:
     version: 7.12.18-rc1
   - apiVersion: v2
     appVersion: 7.12.16
-    created: "2021-02-10T13:28:23.721415Z"
+    created: "2021-02-10T13:30:36.341051Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: bbc3a100235cd56b474aadef6eb459306abdf1d95658c665748a88099e914e6e
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -124,7 +135,7 @@ entries:
     version: 7.12.16
   - apiVersion: v2
     appVersion: 7.12.16-rc1
-    created: "2021-02-10T13:28:23.720633Z"
+    created: "2021-02-10T13:30:36.33998Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: e88b8f54aed68cf8d16846de4bfda0ca1c700df3bc2e2384e3cd38c8c54435cc
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -135,7 +146,7 @@ entries:
     version: 7.12.16-rc1
   - apiVersion: v2
     appVersion: 7.12.14
-    created: "2021-02-10T13:28:23.719849Z"
+    created: "2021-02-10T13:30:36.338851Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: ec6c7fdc8f6eca5373c9a6838c1b47e994dcba1e0fe335d555c8d007d0fe3301
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -146,7 +157,7 @@ entries:
     version: 7.12.14
   - apiVersion: v2
     appVersion: 7.12.14-rc1
-    created: "2021-02-10T13:28:23.719043Z"
+    created: "2021-02-10T13:30:36.337522Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: 4c17b67e04b50d22bfddadaa682e9617f94972bfdce0bc31904390a65126a51a
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -157,7 +168,7 @@ entries:
     version: 7.12.14-rc1
   - apiVersion: v2
     appVersion: 7.12.12
-    created: "2021-02-10T13:28:23.717798Z"
+    created: "2021-02-10T13:30:36.336432Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: c104054f3ea8f79ce5b19ddc020769e1d96082b32df0b29bec778b47b15665e7
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -168,7 +179,7 @@ entries:
     version: 7.12.12
   - apiVersion: v2
     appVersion: 7.12.12-rc1
-    created: "2021-02-10T13:28:23.717026Z"
+    created: "2021-02-10T13:30:36.334924Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: c71a0b2edef1ecc03c4b94e52d511b9324636e94be090b71b18ca7fe1a2c1ea8
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -179,7 +190,7 @@ entries:
     version: 7.12.12-rc1
   - apiVersion: v2
     appVersion: 7.12.10
-    created: "2021-02-10T13:28:23.71625Z"
+    created: "2021-02-10T13:30:36.333803Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: ed222b05d0152e2823ccf8872b699571e6f17cedb2b7df2fd670f1a1f4e3fb30
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -190,7 +201,7 @@ entries:
     version: 7.12.10
   - apiVersion: v2
     appVersion: 7.12.10-rc1
-    created: "2021-02-10T13:28:23.715489Z"
+    created: "2021-02-10T13:30:36.332715Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: fca3b4ead762a785e2555aadc5a671825cf15f15cde204ed3c995d3cc0519640
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -201,7 +212,7 @@ entries:
     version: 7.12.10-rc1
   - apiVersion: v2
     appVersion: 7.12.8
-    created: "2021-02-10T13:28:23.736624Z"
+    created: "2021-02-10T13:30:36.362507Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: 7949f676979c437f7072ff2f1e5fb985dd7667395c1d9288cf7c03b8e95c8049
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -212,7 +223,7 @@ entries:
     version: 7.12.8
   - apiVersion: v2
     appVersion: 7.12.8-rc1
-    created: "2021-02-10T13:28:23.735861Z"
+    created: "2021-02-10T13:30:36.36143Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: f25c350b66fbc0057c7e02b7efe1e5df23d3daad28902c7994d21d731c986b59
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -223,7 +234,7 @@ entries:
     version: 7.12.8-rc1
   - apiVersion: v2
     appVersion: 7.12.6
-    created: "2021-02-10T13:28:23.735097Z"
+    created: "2021-02-10T13:30:36.360373Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: a8b58366bf4e70b5fa85a0140b46dfd0d9804e5a6e803b6d075494c28b335877
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -234,7 +245,7 @@ entries:
     version: 7.12.6
   - apiVersion: v2
     appVersion: 7.12.6-rc1
-    created: "2021-02-10T13:28:23.73433Z"
+    created: "2021-02-10T13:30:36.359001Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: 6fd59eb1ae56d84c7462b927b824b4fcaed75f6289147b3d103a8a689c91baf3
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -245,7 +256,7 @@ entries:
     version: 7.12.6-rc1
   - apiVersion: v2
     appVersion: 7.12.4
-    created: "2021-02-10T13:28:23.733574Z"
+    created: "2021-02-10T13:30:36.357927Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: 2f6dec1fee46487f977426316e128b785443fd08dfcbc169566644e2bfe844c9
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -256,7 +267,7 @@ entries:
     version: 7.12.4
   - apiVersion: v2
     appVersion: 7.12.4-rc1
-    created: "2021-02-10T13:28:23.732788Z"
+    created: "2021-02-10T13:30:36.356843Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: e9a3e053b7d019f2c2a3848577b5456bddcdd09a1c279eb2015f6ba8f2dcd431
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -267,7 +278,7 @@ entries:
     version: 7.12.4-rc1
   - apiVersion: v2
     appVersion: 7.12.2
-    created: "2021-02-10T13:28:23.725775Z"
+    created: "2021-02-10T13:30:36.346723Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: 33dfeef5b71a006ee805eec1bea3ddb358a1b70ba9d762ebae3aa82c73484a1c
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -278,7 +289,7 @@ entries:
     version: 7.12.2
   - apiVersion: v2
     appVersion: 7.12.2-rc1
-    created: "2021-02-10T13:28:23.724552Z"
+    created: "2021-02-10T13:30:36.345661Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
     digest: bfeaab95345f8fd1854c052a299b495e790359059e4bdcc391ca78bff0f79111
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -289,7 +300,7 @@ entries:
     version: 7.12.2-rc1
   - apiVersion: v2
     appVersion: 7.12.0
-    created: "2021-02-10T13:28:23.714701Z"
+    created: "2021-02-10T13:30:36.331607Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 79f7a3bed605ddce4dc982ecdf14eed4fc463d83985fd67825861543759463d3
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -300,7 +311,7 @@ entries:
     version: 7.12.0
   - apiVersion: v2
     appVersion: 7.12.0-rc2
-    created: "2021-02-10T13:28:23.713936Z"
+    created: "2021-02-10T13:30:36.330478Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: f77fe846c33fe6819d67b73524b67b8f369022895d6f6a2a3622c66d339268bb
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -311,7 +322,7 @@ entries:
     version: 7.12.0-rc2
   - apiVersion: v2
     appVersion: 7.12.0-rc1
-    created: "2021-02-10T13:28:23.713128Z"
+    created: "2021-02-10T13:30:36.329437Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 56d0efd90df17ac77ace195226b8ff24e7c09fdd9ff839fdbd24c44c0a66499a
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -322,7 +333,7 @@ entries:
     version: 7.12.0-rc1
   - apiVersion: v2
     appVersion: 7.10.50
-    created: "2021-02-10T13:28:23.709629Z"
+    created: "2021-02-10T13:30:36.324304Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: eac11f10f4f6b030fdd185fa60c57f970353140aba5d074c67ff6bb2d84b3ffd
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -333,7 +344,7 @@ entries:
     version: 7.10.50
   - apiVersion: v2
     appVersion: 7.10.50-rc1
-    created: "2021-02-10T13:28:23.709008Z"
+    created: "2021-02-10T13:30:36.323668Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 57272672b60d98bd4739870985b213fb7de73e1b18bd80198b82da965e402dba
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -344,7 +355,7 @@ entries:
     version: 7.10.50-rc1
   - apiVersion: v2
     appVersion: 7.10.48
-    created: "2021-02-10T13:28:23.708386Z"
+    created: "2021-02-10T13:30:36.322759Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 01128fa1c3514681c0add830ed7ed527387f1b0f8db276b5a987ada3321b2149
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -355,7 +366,7 @@ entries:
     version: 7.10.48
   - apiVersion: v2
     appVersion: 7.10.48-rc1
-    created: "2021-02-10T13:28:23.707765Z"
+    created: "2021-02-10T13:30:36.321858Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 61511737304d19a5b3f16e851822a87fb7de145298e12f7a11531d567f793df7
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -366,7 +377,7 @@ entries:
     version: 7.10.48-rc1
   - apiVersion: v2
     appVersion: 7.10.46
-    created: "2021-02-10T13:28:23.707102Z"
+    created: "2021-02-10T13:30:36.320916Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 9bfde4c7942a5ceefffa5340202f4a5514f2ec410c8e01041313ca28813c6689
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -377,7 +388,7 @@ entries:
     version: 7.10.46
   - apiVersion: v2
     appVersion: 7.10.46-rc1
-    created: "2021-02-10T13:28:23.706491Z"
+    created: "2021-02-10T13:30:36.320014Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 779ffc177d190fcfa9523597d358fd34c203f6b2b57d1127bd4a8ab9ee8a4c3f
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -388,7 +399,7 @@ entries:
     version: 7.10.46-rc1
   - apiVersion: v2
     appVersion: 7.10.44
-    created: "2021-02-10T13:28:23.705861Z"
+    created: "2021-02-10T13:30:36.319084Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 3e9724d457ae2a8bedb029bc3600b73f8b91329cdb72ca9ad3d1e326871b30ba
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -399,7 +410,7 @@ entries:
     version: 7.10.44
   - apiVersion: v2
     appVersion: 7.10.44-rc1
-    created: "2021-02-10T13:28:23.704623Z"
+    created: "2021-02-10T13:30:36.317711Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: bface8efd1ca67d909a7f7bba2f92ca3a8873e77e4acaa8f15a650a82ad9c418
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -410,7 +421,7 @@ entries:
     version: 7.10.44-rc1
   - apiVersion: v2
     appVersion: 7.10.42
-    created: "2021-02-10T13:28:23.704002Z"
+    created: "2021-02-10T13:30:36.316833Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: a7c23d08fb2620c7dd22dc8622ea4f6ca8c87908ff04cf91cd48e36ded074c60
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -421,7 +432,7 @@ entries:
     version: 7.10.42
   - apiVersion: v2
     appVersion: 7.10.42-rc1
-    created: "2021-02-10T13:28:23.70338Z"
+    created: "2021-02-10T13:30:36.31594Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 376c763d1f7110c14005470989386c4a47ac83f5d0a08baf5eebc16bd51ab8b1
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -432,7 +443,7 @@ entries:
     version: 7.10.42-rc1
   - apiVersion: v2
     appVersion: 7.10.40
-    created: "2021-02-10T13:28:23.702732Z"
+    created: "2021-02-10T13:30:36.315031Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: adf61cdd1e249c1920523eb177d079f26ecd222eb4ade6651985e9f0e96e2af8
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -443,7 +454,7 @@ entries:
     version: 7.10.40
   - apiVersion: v2
     appVersion: 7.10.40-rc1
-    created: "2021-02-10T13:28:23.702103Z"
+    created: "2021-02-10T13:30:36.314125Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 99f29e337f639be731c95bf919bf7d3c7d121b2b1e028b7de873c14bfd9d2871
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -454,7 +465,7 @@ entries:
     version: 7.10.40-rc1
   - apiVersion: v2
     appVersion: 7.10.38
-    created: "2021-02-10T13:28:23.700246Z"
+    created: "2021-02-10T13:30:36.311256Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 1ad09cf1cb441ede1cad31dc7aa853daa167032e112fde4006ea1659b5a4ec86
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -465,7 +476,7 @@ entries:
     version: 7.10.38
   - apiVersion: v2
     appVersion: 7.10.38-rc1
-    created: "2021-02-10T13:28:23.699618Z"
+    created: "2021-02-10T13:30:36.310213Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 0e82ca4c122fb8e1129139bc78d0bf808639f73cc6819bca1d0368948adb4602
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -476,7 +487,7 @@ entries:
     version: 7.10.38-rc1
   - apiVersion: v2
     appVersion: 7.10.36
-    created: "2021-02-10T13:28:23.698996Z"
+    created: "2021-02-10T13:30:36.309328Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 46e7dcf65a6c33bda6d04a753cde41e22a4fc862fb7652b0b0cab755105a8d92
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -487,7 +498,7 @@ entries:
     version: 7.10.36
   - apiVersion: v2
     appVersion: 7.10.36-rc1
-    created: "2021-02-10T13:28:23.697773Z"
+    created: "2021-02-10T13:30:36.307857Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 3f4987569293242f8e68a64c1e2a4da1d2391a02714134e92c2ef4da1433fb1d
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -498,7 +509,7 @@ entries:
     version: 7.10.36-rc1
   - apiVersion: v2
     appVersion: 7.10.34
-    created: "2021-02-10T13:28:23.697156Z"
+    created: "2021-02-10T13:30:36.306943Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 518f2bcf242d7149c37f50fe829957ae4c33e584a84b8145f3807133513862f0
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -509,7 +520,7 @@ entries:
     version: 7.10.34
   - apiVersion: v2
     appVersion: 7.10.34-rc1
-    created: "2021-02-10T13:28:23.696541Z"
+    created: "2021-02-10T13:30:36.305975Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: fa0607ae2f2fa0cef24f167b2eac22f86acfc631487bd2cdccee70c34202c204
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -520,7 +531,7 @@ entries:
     version: 7.10.34-rc1
   - apiVersion: v2
     appVersion: 7.10.32
-    created: "2021-02-10T13:28:23.695925Z"
+    created: "2021-02-10T13:30:36.305079Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 4456d424e87a74b23d47a874abefeb6691cd08812c21c0865b6771b9da218e5c
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -531,7 +542,7 @@ entries:
     version: 7.10.32
   - apiVersion: v2
     appVersion: 7.10.32-rc1
-    created: "2021-02-10T13:28:23.695317Z"
+    created: "2021-02-10T13:30:36.30415Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: b985e02ecae502f6081676044763be8eae0eb155982dc08cab52a9dc5eef1ce0
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -542,7 +553,7 @@ entries:
     version: 7.10.32-rc1
   - apiVersion: v2
     appVersion: 7.10.30
-    created: "2021-02-10T13:28:23.694709Z"
+    created: "2021-02-10T13:30:36.303176Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 76e37649e1dd755128ca664925bfd4987f684adfc48216d19742a71cd7c23e02
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -553,7 +564,7 @@ entries:
     version: 7.10.30
   - apiVersion: v2
     appVersion: 7.10.30-rc1
-    created: "2021-02-10T13:28:23.694091Z"
+    created: "2021-02-10T13:30:36.302238Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 655de516c4422631b8bda3785e33649d10655ac686ee0990b37f4181a1648e51
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -564,7 +575,7 @@ entries:
     version: 7.10.30-rc1
   - apiVersion: v2
     appVersion: 7.10.28
-    created: "2021-02-10T13:28:23.693442Z"
+    created: "2021-02-10T13:30:36.301167Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 832d6bc36f6f03d772c49d4dff264e9bd16860bf5dc70bf2fd7e9a099b8debc4
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -575,7 +586,7 @@ entries:
     version: 7.10.28
   - apiVersion: v2
     appVersion: 7.10.28-rc1
-    created: "2021-02-10T13:28:23.692804Z"
+    created: "2021-02-10T13:30:36.300037Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: fcd6f5250628561f334f02b2cde274c8a8e662ccb452f616e44c027c19212269
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -586,7 +597,7 @@ entries:
     version: 7.10.28-rc1
   - apiVersion: v2
     appVersion: 7.10.26
-    created: "2021-02-10T13:28:23.692153Z"
+    created: "2021-02-10T13:30:36.299054Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 5640a897182b6153c756b458d24507278e6eaaf388b22d0da20619d6d74cb245
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -597,7 +608,7 @@ entries:
     version: 7.10.26
   - apiVersion: v2
     appVersion: 7.10.26-rc1
-    created: "2021-02-10T13:28:23.691014Z"
+    created: "2021-02-10T13:30:36.297599Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 7cf0b8ca124e4bb4adf4971a43e089edbc9cc27698f711fe1ef081bbd96dc833
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -608,7 +619,7 @@ entries:
     version: 7.10.26-rc1
   - apiVersion: v2
     appVersion: 7.10.24
-    created: "2021-02-10T13:28:23.69038Z"
+    created: "2021-02-10T13:30:36.296654Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 4ddd321dec824f78dfdb218d97d077e73f784915aa825a0423741503ef3e0f0d
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -619,7 +630,7 @@ entries:
     version: 7.10.24
   - apiVersion: v2
     appVersion: 7.10.24-rc1
-    created: "2021-02-10T13:28:23.689775Z"
+    created: "2021-02-10T13:30:36.295728Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 8c17289d9a9818f05d29c28d2241e0f59717999be6e504e27c28facb7da876c0
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -630,7 +641,7 @@ entries:
     version: 7.10.24-rc1
   - apiVersion: v2
     appVersion: 7.10.22
-    created: "2021-02-10T13:28:23.689168Z"
+    created: "2021-02-10T13:30:36.294753Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 103101e9877d86e23db45961e31b45b00c3cbefa10dde1a9361f2e2cecfbbaa1
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -641,7 +652,7 @@ entries:
     version: 7.10.22
   - apiVersion: v2
     appVersion: 7.10.22-rc1
-    created: "2021-02-10T13:28:23.688568Z"
+    created: "2021-02-10T13:30:36.293816Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 193dbf0a400852e3e73f932eff49c71910362d066cf1f9b40ee71a67cfef7247
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -652,7 +663,7 @@ entries:
     version: 7.10.22-rc1
   - apiVersion: v2
     appVersion: 7.10.20
-    created: "2021-02-10T13:28:23.687961Z"
+    created: "2021-02-10T13:30:36.292901Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: e7c401c89ccf4dc192b67bb950039ea9dc3eb21302dacfc9724404818f6d3e20
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -663,7 +674,7 @@ entries:
     version: 7.10.20
   - apiVersion: v2
     appVersion: 7.10.20-rc2
-    created: "2021-02-10T13:28:23.687337Z"
+    created: "2021-02-10T13:30:36.29186Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 59eb6ca13778daf87e5ccf89d9bbeb11f35230b3dcb2e9219ad15dd8c36a9adb
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -674,7 +685,7 @@ entries:
     version: 7.10.20-rc2
   - apiVersion: v2
     appVersion: 7.10.20-rc1
-    created: "2021-02-10T13:28:23.686726Z"
+    created: "2021-02-10T13:30:36.290759Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: d243a766dc48fe1361244eb0fd48268254446ddac6dcdaff239a85399d9e7945
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -685,7 +696,7 @@ entries:
     version: 7.10.20-rc1
   - apiVersion: v2
     appVersion: 7.10.18
-    created: "2021-02-10T13:28:23.683572Z"
+    created: "2021-02-10T13:30:36.286263Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: bff1776d91afcf1b102ab039e9488bba9c35c56733f5b5e77af344c3fbf858ac
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -696,7 +707,7 @@ entries:
     version: 7.10.18
   - apiVersion: v2
     appVersion: 7.10.18-rc2
-    created: "2021-02-10T13:28:23.68289Z"
+    created: "2021-02-10T13:30:36.285181Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: cc78b794d93e8e234a27da916f7ac4181006afefcf9b60a1abf4bce59dddf570
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -707,7 +718,7 @@ entries:
     version: 7.10.18-rc2
   - apiVersion: v2
     appVersion: 7.10.18-rc1
-    created: "2021-02-10T13:28:23.682259Z"
+    created: "2021-02-10T13:30:36.283992Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: e571aeb14acb43e000edb96112d0ac83880a47deccac03ddebb506c42a138b9b
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -718,7 +729,7 @@ entries:
     version: 7.10.18-rc1
   - apiVersion: v2
     appVersion: 7.10.16
-    created: "2021-02-10T13:28:23.681629Z"
+    created: "2021-02-10T13:30:36.282705Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: f85f51dc9017ba0f26ebf3d220cc690966111bcc4f822cb91f9cdbb57016eccb
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -729,7 +740,7 @@ entries:
     version: 7.10.16
   - apiVersion: v2
     appVersion: 7.10.16-rc1
-    created: "2021-02-10T13:28:23.68089Z"
+    created: "2021-02-10T13:30:36.281547Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 0efb396eadf0c76ca9a2ff073031490432ac74fb7f3478f5b6922041a2a55ba4
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -740,7 +751,7 @@ entries:
     version: 7.10.16-rc1
   - apiVersion: v2
     appVersion: 7.10.14
-    created: "2021-02-10T13:28:23.680025Z"
+    created: "2021-02-10T13:30:36.280361Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 2c27dd3e963c1822fb75c665f23946d0c85b0f3eb859156afa6e9dac4ad87d02
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -751,7 +762,7 @@ entries:
     version: 7.10.14
   - apiVersion: v2
     appVersion: 7.10.14-rc1
-    created: "2021-02-10T13:28:23.679126Z"
+    created: "2021-02-10T13:30:36.279263Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 74544ea2532ac7dda8914736720b0cf192775b78f8af3fa6c50cc9670a8d47da
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -762,7 +773,7 @@ entries:
     version: 7.10.14-rc1
   - apiVersion: v2
     appVersion: 7.10.12
-    created: "2021-02-10T13:28:23.678439Z"
+    created: "2021-02-10T13:30:36.278019Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 6f1adc56501b6ded531704eead0bc4f35ca2df81fb518102b5b653e7cc12c0a8
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -773,7 +784,7 @@ entries:
     version: 7.10.12
   - apiVersion: v2
     appVersion: 7.10.12-rc1
-    created: "2021-02-10T13:28:23.67776Z"
+    created: "2021-02-10T13:30:36.277048Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: e83cc91ab12f949193c80379bf5bd8e627b6185bd0ee60b3e88177b0a44431cc
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -784,7 +795,7 @@ entries:
     version: 7.10.12-rc1
   - apiVersion: v2
     appVersion: 7.10.10
-    created: "2021-02-10T13:28:23.67646Z"
+    created: "2021-02-10T13:30:36.275301Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 0e1167523f6ca06734077cf5e2102117cd274bc45f1beead85a1637cb7cd011f
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -795,7 +806,7 @@ entries:
     version: 7.10.10
   - apiVersion: v2
     appVersion: 7.10.10-rc1
-    created: "2021-02-10T13:28:23.675701Z"
+    created: "2021-02-10T13:30:36.274042Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 928157876c3a8be8a0f55e450f8327382abea878fb2b8f30d109b3d23406bba7
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -806,7 +817,7 @@ entries:
     version: 7.10.10-rc1
   - apiVersion: v2
     appVersion: 7.10.8
-    created: "2021-02-10T13:28:23.712028Z"
+    created: "2021-02-10T13:30:36.328321Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 65dd834420299de485bf5c3f913a05aa542f1dbe92f2255d44aa4bbd7b7bd544
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -817,7 +828,7 @@ entries:
     version: 7.10.8
   - apiVersion: v2
     appVersion: 7.10.8-rc1
-    created: "2021-02-10T13:28:23.71142Z"
+    created: "2021-02-10T13:30:36.327335Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: acd6d0a54332d20c1e933974fb43fcec0b3901928a9f077e5f9940ad0ca964ab
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -828,7 +839,7 @@ entries:
     version: 7.10.8-rc1
   - apiVersion: v2
     appVersion: 7.10.6
-    created: "2021-02-10T13:28:23.710826Z"
+    created: "2021-02-10T13:30:36.326204Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 8e4b1d1701dde44f1181840f45d9a546f9dfa6337556ea510e47a2d70bff397c
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -839,7 +850,7 @@ entries:
     version: 7.10.6
   - apiVersion: v2
     appVersion: 7.10.6-rc1
-    created: "2021-02-10T13:28:23.710224Z"
+    created: "2021-02-10T13:30:36.325203Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: b4269fcc45294e535283816cb328aa409bebb3db9828b0ac31394e3a9f6cc3c2
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -850,7 +861,7 @@ entries:
     version: 7.10.6-rc1
   - apiVersion: v2
     appVersion: 7.10.4
-    created: "2021-02-10T13:28:23.701488Z"
+    created: "2021-02-10T13:30:36.313039Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: ff4bd8f1f751ea2350472213c003c1b631a23aa24affa85dd429b6933455018e
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -861,7 +872,7 @@ entries:
     version: 7.10.4
   - apiVersion: v2
     appVersion: 7.10.4-rc1
-    created: "2021-02-10T13:28:23.70087Z"
+    created: "2021-02-10T13:30:36.312137Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 599844b2ef6b0f04a5e3c0f75cbe7760a98905bc0200b28e68a60f76ef42bf03
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -872,7 +883,7 @@ entries:
     version: 7.10.4-rc1
   - apiVersion: v2
     appVersion: 7.10.2
-    created: "2021-02-10T13:28:23.686099Z"
+    created: "2021-02-10T13:30:36.289862Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 2eb0d2156694dbeaa340603b5424ae4926f09cf53f808a4b0c6028280d54fb99
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -883,7 +894,7 @@ entries:
     version: 7.10.2
   - apiVersion: v2
     appVersion: 7.10.2-rc2
-    created: "2021-02-10T13:28:23.685422Z"
+    created: "2021-02-10T13:30:36.288748Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 90ab76dd67473fed7fbd2c3e757f8d5310189994790ef67a71d2c5b5594484bd
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -894,7 +905,7 @@ entries:
     version: 7.10.2-rc2
   - apiVersion: v2
     appVersion: 7.10.2-rc1
-    created: "2021-02-10T13:28:23.684239Z"
+    created: "2021-02-10T13:30:36.287277Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 12d1e6f37886766423b2984fded3e7e6306b4c046258e8d542834f8179bb0c51
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -905,7 +916,7 @@ entries:
     version: 7.10.2-rc1
   - apiVersion: v2
     appVersion: 7.10.0
-    created: "2021-02-10T13:28:23.674933Z"
+    created: "2021-02-10T13:30:36.272721Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 03994b32ce6a13ba22b72aa22a10bc1b9c01e7e2ca5b0db0659703e7e88e9de3
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -916,7 +927,7 @@ entries:
     version: 7.10.0
   - apiVersion: v2
     appVersion: 7.10.0-rc2
-    created: "2021-02-10T13:28:23.674092Z"
+    created: "2021-02-10T13:30:36.271592Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 92276c64fa8b1993078c1c43d87a8cbeb40aeb6c980635e290f0a53004fd2353
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -927,7 +938,7 @@ entries:
     version: 7.10.0-rc2
   - apiVersion: v2
     appVersion: 7.10.0-rc1
-    created: "2021-02-10T13:28:23.673472Z"
+    created: "2021-02-10T13:30:36.270359Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: d134240f2363e4b97e8ce227081db7c47c39cb3a7397dcf05c129d90383c8e80
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -938,7 +949,7 @@ entries:
     version: 7.10.0-rc1
   - apiVersion: v2
     appVersion: 7.8.72
-    created: "2021-02-10T13:28:23.766062Z"
+    created: "2021-02-10T13:30:36.405671Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 37f70ed4105ba4f201de0c6c0accf1f056a1fd8d727e1458158c620d5154c342
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -949,7 +960,7 @@ entries:
     version: 7.8.72
   - apiVersion: v2
     appVersion: 7.8.72-rc1
-    created: "2021-02-10T13:28:23.765547Z"
+    created: "2021-02-10T13:30:36.404871Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 0e1abd5afc2b090f0f092df6952a1f7f0b4b5645d4cde505bfcd1f98a0332a86
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -960,7 +971,7 @@ entries:
     version: 7.8.72-rc1
   - apiVersion: v2
     appVersion: 7.8.70
-    created: "2021-02-10T13:28:23.764579Z"
+    created: "2021-02-10T13:30:36.404088Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 9161815beeafdf2884d37866ca2f516614e16f07c1d056066bf94ccff8758820
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -971,7 +982,7 @@ entries:
     version: 7.8.70
   - apiVersion: v2
     appVersion: 7.8.70-rc1
-    created: "2021-02-10T13:28:23.764079Z"
+    created: "2021-02-10T13:30:36.40328Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 00abf8233455670919ea6a4d8b4915a18660a96c4407e14781bf8ef71e152105
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -982,7 +993,7 @@ entries:
     version: 7.8.70-rc1
   - apiVersion: v2
     appVersion: 7.8.68
-    created: "2021-02-10T13:28:23.763578Z"
+    created: "2021-02-10T13:30:36.402502Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: fbd260f7242c0aa80703ce31bc5d3481b5ed72eb32e5cedf091d54c6e69f3f78
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -993,7 +1004,7 @@ entries:
     version: 7.8.68
   - apiVersion: v2
     appVersion: 7.8.68-rc1
-    created: "2021-02-10T13:28:23.763073Z"
+    created: "2021-02-10T13:30:36.401739Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: ea61ba3202d3341c36006c57dd49c6ae3a55ab5fab67aeb6c7752eba1a9b8d1f
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1004,7 +1015,7 @@ entries:
     version: 7.8.68-rc1
   - apiVersion: v2
     appVersion: 7.8.66
-    created: "2021-02-10T13:28:23.762571Z"
+    created: "2021-02-10T13:30:36.400956Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 03991130964555111a1d238d911478899549eaec2f69cacf8f62a5aead00fb58
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1015,7 +1026,7 @@ entries:
     version: 7.8.66
   - apiVersion: v2
     appVersion: 7.8.66-rc1
-    created: "2021-02-10T13:28:23.762067Z"
+    created: "2021-02-10T13:30:36.400154Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: a93ae736287896ce40feee5ee91c4cf10aab620ead01ce473b1d75b97c2f7f43
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1026,7 +1037,7 @@ entries:
     version: 7.8.66-rc1
   - apiVersion: v2
     appVersion: 7.8.64
-    created: "2021-02-10T13:28:23.761562Z"
+    created: "2021-02-10T13:30:36.399347Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: ddd0fbe1f87ced134fc0b8f87723216f8813791593e2e95212e243705a72b017
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1037,7 +1048,7 @@ entries:
     version: 7.8.64
   - apiVersion: v2
     appVersion: 7.8.64-rc1
-    created: "2021-02-10T13:28:23.76106Z"
+    created: "2021-02-10T13:30:36.398533Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 4079b30a92e54d481ed0928f5b1e68cc5ee7ae8cc1079ff79bf566a60ec65317
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1048,7 +1059,7 @@ entries:
     version: 7.8.64-rc1
   - apiVersion: v2
     appVersion: 7.8.62
-    created: "2021-02-10T13:28:23.760546Z"
+    created: "2021-02-10T13:30:36.397707Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 4fd411b2984c9b39f8bd554521062370e5dca5a3bac69247b9af418919a62d41
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1059,7 +1070,7 @@ entries:
     version: 7.8.62
   - apiVersion: v2
     appVersion: 7.8.62-rc1
-    created: "2021-02-10T13:28:23.760033Z"
+    created: "2021-02-10T13:30:36.396517Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 7922f2da4b10988dfca2e0e5a8d4d403008ea2e9f85cf3803070bf76ccf15f86
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1070,7 +1081,7 @@ entries:
     version: 7.8.62-rc1
   - apiVersion: v2
     appVersion: 7.8.60
-    created: "2021-02-10T13:28:23.759513Z"
+    created: "2021-02-10T13:30:36.395697Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 47bd4c7d31fa380d7b063846fa74d872408d0d26e14bae8f44b74943521aed2f
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1081,7 +1092,7 @@ entries:
     version: 7.8.60
   - apiVersion: v2
     appVersion: 7.8.60-rc1
-    created: "2021-02-10T13:28:23.758986Z"
+    created: "2021-02-10T13:30:36.394874Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: c8ff4336df19841add20631b90d617c014892e98065b3866cd39c2220f77263b
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1092,7 +1103,7 @@ entries:
     version: 7.8.60-rc1
   - apiVersion: v2
     appVersion: 7.8.58
-    created: "2021-02-10T13:28:23.757981Z"
+    created: "2021-02-10T13:30:36.394039Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 7d9e937dd61cbdc1b79ea367220a5ed210c70f66822667d534c74b113b562179
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1103,7 +1114,7 @@ entries:
     version: 7.8.58
   - apiVersion: v2
     appVersion: 7.8.58-rc1
-    created: "2021-02-10T13:28:23.757461Z"
+    created: "2021-02-10T13:30:36.393163Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 514d8d19089a2e35c566c981222ce97cea1c6600c62905b856b9450bee3a8970
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1114,7 +1125,7 @@ entries:
     version: 7.8.58-rc1
   - apiVersion: v2
     appVersion: 7.8.56
-    created: "2021-02-10T13:28:23.756891Z"
+    created: "2021-02-10T13:30:36.392368Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: a4d6bf9d3c834ec9e3835324b74a52443cd3e24d8a775dab20d6df965b664006
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1125,7 +1136,7 @@ entries:
     version: 7.8.56
   - apiVersion: v2
     appVersion: 7.8.56-rc1
-    created: "2021-02-10T13:28:23.756345Z"
+    created: "2021-02-10T13:30:36.391594Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 24a30516541186435333769873c6b96642a2df0f1a79f34865c63a120517bcff
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1136,7 +1147,7 @@ entries:
     version: 7.8.56-rc1
   - apiVersion: v2
     appVersion: 7.8.54
-    created: "2021-02-10T13:28:23.755845Z"
+    created: "2021-02-10T13:30:36.390826Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 459f42dc2f4166c24c543241cf7557e3aa4dab36e31152b020fb748ad7039b2d
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1147,7 +1158,7 @@ entries:
     version: 7.8.54
   - apiVersion: v2
     appVersion: 7.8.54-rc1
-    created: "2021-02-10T13:28:23.755335Z"
+    created: "2021-02-10T13:30:36.390001Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 612e4043f57426a508c04ac86e8b01dffaa0d853199732700cb29eb9afcb91d0
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1158,7 +1169,7 @@ entries:
     version: 7.8.54-rc1
   - apiVersion: v2
     appVersion: 7.8.52
-    created: "2021-02-10T13:28:23.754835Z"
+    created: "2021-02-10T13:30:36.389215Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 3d037536ddef46e478153a59a1067374a4776f180a6407da2d2bd870411eebc1
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1169,7 +1180,7 @@ entries:
     version: 7.8.52
   - apiVersion: v2
     appVersion: 7.8.52-rc1
-    created: "2021-02-10T13:28:23.754324Z"
+    created: "2021-02-10T13:30:36.388436Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: e151aea8b04a77a6fd48984f1d421a4377be266caa335eb10356ac2f758add2d
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1180,7 +1191,7 @@ entries:
     version: 7.8.52-rc1
   - apiVersion: v2
     appVersion: 7.8.50
-    created: "2021-02-10T13:28:23.753814Z"
+    created: "2021-02-10T13:30:36.387648Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: bfffa493c9c63c17c2efd4dc00e347468ec1219bf9804c2628ebede28e742a92
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1191,7 +1202,7 @@ entries:
     version: 7.8.50
   - apiVersion: v2
     appVersion: 7.8.50-rc1
-    created: "2021-02-10T13:28:23.753295Z"
+    created: "2021-02-10T13:30:36.386677Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: aebca63f9b25114b86328120f3f187c0f11506bd38773d8c123664d6efd1a2af
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1202,7 +1213,7 @@ entries:
     version: 7.8.50-rc1
   - apiVersion: v2
     appVersion: 7.8.48
-    created: "2021-02-10T13:28:23.752788Z"
+    created: "2021-02-10T13:30:36.385908Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: b213dcb8578bdd0325ea3513fb1a7dda6e1248988293b9ec81882e868e8d2efd
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1213,7 +1224,7 @@ entries:
     version: 7.8.48
   - apiVersion: v2
     appVersion: 7.8.48-rc1
-    created: "2021-02-10T13:28:23.752272Z"
+    created: "2021-02-10T13:30:36.385159Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 18b5fea3c99f862664edde49a3c9601cd78b547f6396ee0ce15c204f4ec74658
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1224,7 +1235,7 @@ entries:
     version: 7.8.48-rc1
   - apiVersion: v2
     appVersion: 7.8.46
-    created: "2021-02-10T13:28:23.751266Z"
+    created: "2021-02-10T13:30:36.384417Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 70965fdadd3c21e81d420a841a282e7f7790a24fa9c32772dd218cc3af5c926a
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1235,7 +1246,7 @@ entries:
     version: 7.8.46
   - apiVersion: v2
     appVersion: 7.8.46-rc1
-    created: "2021-02-10T13:28:23.750757Z"
+    created: "2021-02-10T13:30:36.383612Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 278dc13ecc2cca62e8674ff619b241cd7a085d0fb945b1070121b7a979d6c593
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1246,7 +1257,7 @@ entries:
     version: 7.8.46-rc1
   - apiVersion: v2
     appVersion: 7.8.44
-    created: "2021-02-10T13:28:23.75025Z"
+    created: "2021-02-10T13:30:36.382833Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 61a6ba1493e86906d5974528735f4ee1a9bfa6eb1e367c60d83c3fb1dc66da68
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1257,7 +1268,7 @@ entries:
     version: 7.8.44
   - apiVersion: v2
     appVersion: 7.8.44-rc1
-    created: "2021-02-10T13:28:23.749744Z"
+    created: "2021-02-10T13:30:36.382036Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 0496087f9bb847c0ea7e968964442cfe7249e2b6ac5787b778ed39df4b84dec0
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1268,7 +1279,7 @@ entries:
     version: 7.8.44-rc1
   - apiVersion: v2
     appVersion: 7.8.42
-    created: "2021-02-10T13:28:23.749235Z"
+    created: "2021-02-10T13:30:36.381194Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 49123d4cb873549c9ced23b21217d37c46474dedfe5d5beb93875f0cbe2d2761
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1279,7 +1290,7 @@ entries:
     version: 7.8.42
   - apiVersion: v2
     appVersion: 7.8.42-rc1
-    created: "2021-02-10T13:28:23.74871Z"
+    created: "2021-02-10T13:30:36.380408Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 26fafb71b1e3b3934622ff3eeb1b5d63dfd7851b3e7d081f9a6385e64c8e7754
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1290,7 +1301,7 @@ entries:
     version: 7.8.42-rc1
   - apiVersion: v2
     appVersion: 7.8.40
-    created: "2021-02-10T13:28:23.748194Z"
+    created: "2021-02-10T13:30:36.379638Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 0563a2bf185c8000153c791fbb9cb4495eb827350b1e466ee6b8240c2f9513c7
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1301,7 +1312,7 @@ entries:
     version: 7.8.40
   - apiVersion: v2
     appVersion: 7.8.40-rc1
-    created: "2021-02-10T13:28:23.747688Z"
+    created: "2021-02-10T13:30:36.378872Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 4d500a73a373043f9b8ef6e2e7ae1a06140d597de1f6ca93cf49308494e6fec0
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1312,7 +1323,7 @@ entries:
     version: 7.8.40-rc1
   - apiVersion: v2
     appVersion: 7.8.38
-    created: "2021-02-10T13:28:23.747176Z"
+    created: "2021-02-10T13:30:36.377605Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 4d13cff8ec5762cfced3809542245feb78f4d1fa7909376e7d8feb8c669aea68
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1323,7 +1334,7 @@ entries:
     version: 7.8.38
   - apiVersion: v2
     appVersion: 7.8.38-rc1
-    created: "2021-02-10T13:28:23.746667Z"
+    created: "2021-02-10T13:30:36.376806Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 94591229138f811ed20a94cdc3b4fa890ec68493755eb33ae448afaa53f73a90
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1334,7 +1345,7 @@ entries:
     version: 7.8.38-rc1
   - apiVersion: v2
     appVersion: 7.8.36
-    created: "2021-02-10T13:28:23.746162Z"
+    created: "2021-02-10T13:30:36.376061Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 6e65456d61612f04c7047975446bb3bc70dc6980608aa2744872ed2bb56b4b83
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1345,7 +1356,7 @@ entries:
     version: 7.8.36
   - apiVersion: v2
     appVersion: 7.8.36-rc1
-    created: "2021-02-10T13:28:23.745627Z"
+    created: "2021-02-10T13:30:36.375257Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: c884edaeb25e63d82d33135544b79ddf6f4df8c98328f3d9c63e29149f17b4bc
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1356,7 +1367,7 @@ entries:
     version: 7.8.36-rc1
   - apiVersion: v2
     appVersion: 7.8.34
-    created: "2021-02-10T13:28:23.744644Z"
+    created: "2021-02-10T13:30:36.374471Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: e6d07750543abe9db1feb635097cc2e98b3f4f29ec850709554863b214b2dc7c
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1367,7 +1378,7 @@ entries:
     version: 7.8.34
   - apiVersion: v2
     appVersion: 7.8.34-rc1
-    created: "2021-02-10T13:28:23.744134Z"
+    created: "2021-02-10T13:30:36.373686Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 502068bed0a90f382c2f4614bec1ca30ef5f44ba2ba2e43e8e0b985a6f7fbeac
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1378,7 +1389,7 @@ entries:
     version: 7.8.34-rc1
   - apiVersion: v2
     appVersion: 7.8.32
-    created: "2021-02-10T13:28:23.743631Z"
+    created: "2021-02-10T13:30:36.372931Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 05cdc6762bf44d09fbc7791cb42f161e97f81bc00de97851ebbf4ed88e607e8c
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1389,7 +1400,7 @@ entries:
     version: 7.8.32
   - apiVersion: v2
     appVersion: 7.8.32-rc1
-    created: "2021-02-10T13:28:23.743127Z"
+    created: "2021-02-10T13:30:36.372209Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: bbbc8919856b75e85d4f4d3c24220d28ed376b3ef24cc2cfcc573c92713c580c
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1400,7 +1411,7 @@ entries:
     version: 7.8.32-rc1
   - apiVersion: v2
     appVersion: 7.8.30
-    created: "2021-02-10T13:28:23.742624Z"
+    created: "2021-02-10T13:30:36.371559Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 294183c455d47533f015fd1e7a8f0ab9cd6c19beab7539812bcc1a56f36f9711
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1411,7 +1422,7 @@ entries:
     version: 7.8.30
   - apiVersion: v2
     appVersion: 7.8.30-rc1
-    created: "2021-02-10T13:28:23.742108Z"
+    created: "2021-02-10T13:30:36.370748Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 6767c0892b4b83f57c5eea342ed24da2372db30195d5c1e4a802aa9d6d9375a4
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1422,7 +1433,7 @@ entries:
     version: 7.8.30-rc1
   - apiVersion: v2
     appVersion: 7.8.28
-    created: "2021-02-10T13:28:23.741607Z"
+    created: "2021-02-10T13:30:36.36995Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: fc92136203b1c2285d2d39f7dfcedaa9871779d325ffdf094443d3c47d171b73
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1433,7 +1444,7 @@ entries:
     version: 7.8.28
   - apiVersion: v2
     appVersion: 7.8.28-rc1
-    created: "2021-02-10T13:28:23.741098Z"
+    created: "2021-02-10T13:30:36.369153Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: f07ceb6fcb3b4d108a0520a3de8f30fb381521a57d7b8b0312bd3ca5a5a1da07
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1444,7 +1455,7 @@ entries:
     version: 7.8.28-rc1
   - apiVersion: v2
     appVersion: 7.8.26
-    created: "2021-02-10T13:28:23.740579Z"
+    created: "2021-02-10T13:30:36.367973Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: e18292281167344a0767d6cda4019a06c800f9c0042fc6416fc4c451aabcdc67
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1455,7 +1466,7 @@ entries:
     version: 7.8.26
   - apiVersion: v2
     appVersion: 7.8.26-rc2
-    created: "2021-02-10T13:28:23.74007Z"
+    created: "2021-02-10T13:30:36.367193Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 0262b4e95104d27ce6b7a38359fb2edc1fa488f23f8e8271cdb224fd52ecc92f
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1466,7 +1477,7 @@ entries:
     version: 7.8.26-rc2
   - apiVersion: v2
     appVersion: 7.8.26-rc1
-    created: "2021-02-10T13:28:23.73956Z"
+    created: "2021-02-10T13:30:36.366413Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 7d995dadce67eca4b51801d497de5b96cbb2f31fb8c57b6a2c9260a83f5fe8e8
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1477,7 +1488,7 @@ entries:
     version: 7.8.26-rc1
   - apiVersion: v2
     appVersion: 7.8.24
-    created: "2021-02-10T13:28:23.738628Z"
+    created: "2021-02-10T13:30:36.365625Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: cb7aa5d40a55cfa83c00370198a0bffe02ec7fc82b57df2b16e6abe4a20dc9e5
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1488,7 +1499,7 @@ entries:
     version: 7.8.24
   - apiVersion: v2
     appVersion: 7.8.24-rc1
-    created: "2021-02-10T13:28:23.738132Z"
+    created: "2021-02-10T13:30:36.364835Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 701f38465ecdd18e359485ff6366a91df6b82d44f978366bc4b231fef8c763ad
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1499,7 +1510,7 @@ entries:
     version: 7.8.24-rc1
   - apiVersion: v2
     appVersion: 7.8.22
-    created: "2021-02-10T13:28:23.737626Z"
+    created: "2021-02-10T13:30:36.364029Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 7804bf82581bf624a1ae3946ce6fbf728a78c0c26540ec78ddd9175b6bc55481
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1510,7 +1521,7 @@ entries:
     version: 7.8.22
   - apiVersion: v2
     appVersion: 7.8.22-rc1
-    created: "2021-02-10T13:28:23.737127Z"
+    created: "2021-02-10T13:30:36.363271Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: 64774f0f276e45fa41fa95d9259f9c0e2f217cb65aa25b5e7b1723827645c1b1
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1521,7 +1532,7 @@ entries:
     version: 7.8.22-rc1
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2021-02-10T13:28:23.672852Z"
+    created: "2021-02-10T13:30:36.269099Z"
     description: An example Helm chart for launching a HPCC cluster using Kubernetes
     digest: ae055195586e9544c9a490510697cb8f3a43a14ccbb118a7d706423ce914a7d8
     icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
@@ -1533,9 +1544,9 @@ entries:
   hpcc-azurefile:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-02-10T13:28:23.766266Z"
+    created: "2021-02-10T13:30:36.405872Z"
     description: A helm chart to provision HPCC PVC's using the 'azurefile' Storage Class
-    digest: 10f57d3636b051138d88d732fb0ccac0cf0e73d367b503aa6064edde90d4632b
+    digest: 1beca97c55ab22c49b557f3315697c6b3ad0189aeb91d21090aab9013e92fb89
     name: hpcc-azurefile
     type: application
     urls:
@@ -1544,9 +1555,9 @@ entries:
   hpcc-efs:
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2021-02-10T13:28:23.766497Z"
+    created: "2021-02-10T13:30:36.406079Z"
     description: An example Helm chart for launching a EFS cluster using Kubernetes
-    digest: 6d79663d72f165fb1a02cad942ca6390d0ce9e57b5881370ac7b9335b2689612
+    digest: fe76f0f5c9475629211ffda28a91e379adf5c87194e8ee6a212ab00c77ccee5c
     name: hpcc-efs
     type: application
     urls:
@@ -1555,9 +1566,9 @@ entries:
   hpcc-localfile:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-02-10T13:28:23.766695Z"
+    created: "2021-02-10T13:30:36.406386Z"
     description: A helm chart to provision HPCC PVC's using the 'host directories'
-    digest: d0223b40621539b5bc9d1da15ee1b562a7da10435d7757379bbcfbd16fd3a491
+    digest: 673bee1b6a21a462f06e0fa02d6df4586435dac98c118e6cfd6305d2f670c38a
     name: hpcc-localfile
     type: application
     urls:
@@ -1566,9 +1577,9 @@ entries:
   hpcc-localplanes:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-02-10T13:28:23.766846Z"
+    created: "2021-02-10T13:30:36.406802Z"
     description: A helm chart to provision multiple HPCC PVC's using the 'host directories'
-    digest: 9a174f1b1b60e85e438161699fc28c5ae5bfacbda300d34c42e8eaca8e2944a3
+    digest: 356998a52bfc9c58018a790a1df5d71ef5e4941c071fee26f73e83e47bbb0163
     name: hpcc-localplanes
     type: application
     urls:
@@ -1577,12 +1588,12 @@ entries:
   hpcc-nfs:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-02-10T13:28:23.767036Z"
+    created: "2021-02-10T13:30:36.407036Z"
     description: A Helm chart to provision HPCC PVC's using an NFS deployment as shared storage
-    digest: 68c769237891003398a6b12dae977e4eedf65504a9b5a85b583ddcd97d8638f3
+    digest: 10f584c942f44eb9236f1bc29dac4ffbb5ffaa6d65ac560ff3962897777ac4fb
     name: hpcc-nfs
     type: application
     urls:
     - https://hpcc-systems.github.io/helm-chart/hpcc-nfs-0.1.0.tgz
     version: 0.1.0
-generated: "2021-02-10T13:28:23.672248Z"
+generated: "2021-02-10T13:30:36.267906Z"
