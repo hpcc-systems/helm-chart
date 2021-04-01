@@ -5,8 +5,26 @@
     "global": {
       "$ref": "#/definitions/global"
     },
+    "security" : {
+      "$ref": "#/definitions/security"
+    },
     "hostgroups": {
       "$ref": "#/definitions/hostgroups"
+    },
+    "placements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "pods": {
+            "type": "array",
+            "items": { "type": "string" }
+           },
+          "placement": {
+            "$ref": "#/definitions/placement"
+          }
+        }
+      }
     },
     "storage": {
       "type": "object",
@@ -36,6 +54,26 @@
       },
       "additionalProperties": false
     },
+    "certificates": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "issuers": {
+          "type": "object",
+          "properties": {
+            "local": {
+              "$ref": "#/definitions/issuer"
+            },
+            "public": {
+              "$ref": "#/definitions/issuer"
+            }
+          }
+        }
+      }
+    },
     "secrets": {
       "description": "configuration for secrets accessed by the components",
       "type": "object",
@@ -47,6 +85,12 @@
           "$ref": "#/definitions/secrets"
         },
         "ecl": {
+          "$ref": "#/definitions/secrets"
+        },
+        "codeSign": {
+          "$ref": "#/definitions/secrets"
+        },
+        "codeVerify": {
           "$ref": "#/definitions/secrets"
         },
         "system": {
@@ -72,6 +116,12 @@
           "$ref": "#/definitions/vaultCategory"
         },
         "ecl-user": {
+          "$ref": "#/definitions/vaultCategory"
+        },
+        "codeSign": {
+          "$ref": "#/definitions/vaultCategory"
+        },
+        "codeVerify": {
           "$ref": "#/definitions/vaultCategory"
         }
       },
@@ -125,6 +175,27 @@
         ]
       }
     },
+    "dfuserver": {
+      "description": "dfuserver process",
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "name": {
+              "type": "string",
+              "description": "The name of the dfuserver process"
+            },
+            "disabled": {
+              "type": "boolean"
+            },
+            "maxJobs": {
+              "type": "integer"
+            },
+            "required": [ "name" ]
+          }
+        ]
+      }
+    },
     "roxie": {
       "description": "eclagent process",
       "type": "array",
@@ -134,6 +205,11 @@
       "description": "thor process",
       "type": "array",
       "items": { "$ref": "#/definitions/thor" }
+    },
+    "sasha": {
+      "description": "sasha services",
+      "type": "object",
+      "$ref": "#/definitions/sashaservice"
     }
   },
   "required": [
@@ -175,10 +251,59 @@
               "type": "number"
             }
           }
+        },
+        "misc": {
+          "description": "Miscellaneous settings",
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "postJobCommand": {
+                  "description": "Execute this command when a K8s Job launched by a deployment ends, either gracefully or when terminated externally causing a preStop event",
+                  "type": "string"
+                },
+                "postJobCommandViaSidecar": {
+                  "description": "Causes shareProcessNamespace to be enabled, and the postJobCommand to execute via a sidecar",
+                  "type": "boolean"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
-
       },
       "additionalProperties": false
+    },
+    "security": {
+      "type": "object",
+      "properties": {
+        "eclSecurity": {
+          "$ref": "#/definitions/eclSecurity"
+        }
+      }
+    },
+    "eclSecurity": {
+      "type": "object",
+      "properties": {
+        "embedded": {
+          "$ref": "#/definitions/eclSecurityValues"
+        },
+        "pipe": {
+          "$ref": "#/definitions/eclSecurityValues"
+        },
+        "extern": {
+          "$ref": "#/definitions/eclSecurityValues"
+        },
+        "datafile": {
+          "$ref": "#/definitions/eclSecurityValues"
+        }
+      }
+    },
+    "eclSecurityValues": {
+      "type": "string",
+      "enum": ["deny", "allow", "allowSigned"]
     },
     "image": {
       "type": "object",
@@ -278,6 +403,15 @@
           "description": "which planes (if any) the data is replicated onto (primarily bare metal)",
           "type": "array",
           "items": { "type": "string" }
+        },
+        "labels": {
+          "description": "a list of labels associated with this plane, e.g. lz, data. NB: if blank/unset, treated as if 'data'",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "umask" : {
+          "description": "file creation mask (used by despray)",
+          "type" : "string"
         }
       },
       "required": [ "name", "prefix" ],
@@ -436,6 +570,11 @@
         },
         "resources": {
           "$ref": "#/definitions/resources"
+        },
+        "services": {
+          "description": "sasha services",
+          "type": "object",
+          "$ref": "#/definitions/sashaservice"
         }
       }
     },
@@ -546,6 +685,9 @@
         "image": {
           "$ref": "#/definitions/image"
         },
+        "topoServer": {
+          "$ref": "#/definitions/toposerver"
+        },
         "logging": {
           "$ref": "#/definitions/logging"
         },
@@ -567,6 +709,23 @@
         },
         "channelResources": {
           "$ref": "#/definitions/resources"
+        }
+      }
+    },
+    "toposerver": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "integer"
+        },
+        "traceLevel": {
+          "type": "integer"
+        },
+        "replicas": {
+          "type": "integer"
+        },
+        "logging": {
+          "$ref": "#/definitions/logging"
         }
       }
     },
@@ -684,6 +843,328 @@
         },
         "eclAgentResources": {
           "$ref": "#/definitions/resources"
+        }
+      }
+    },
+    "sashacommon": {
+      "type": "object",
+      "properties": {
+        "disabled": {
+          "type": "boolean"
+        },
+        "interval": {
+          "type": "integer",
+          "default": 1
+        },
+        "servicePort": {
+          "type": "integer"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "at" : {
+          "type": "string",
+          "default": "* * * * *"
+        },
+        "throttle": {
+          "type": "integer",
+          "description": "throttle ratio percentage (0-99, 0 no throttling, 50 is half speed)"
+        },
+        "storage": {
+          "$ref": "#/definitions/storageType"
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
+        }
+      }
+    },
+    "sasha-limitcutoff": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "threshold before removal starts (0 disables)",
+          "default": "20"
+        },
+        "cutoff": {
+          "type": "integer",
+          "description": "minimum age (days)",
+          "default": "4"
+        }
+      }
+    },
+    "sasha-coalescer": {
+      "oneOf": [
+        {
+          "type": "object",
+          "allOf": [
+            { "$ref": "#/definitions/sashacommon" },
+            {
+              "properties": {
+                "minDeltaSize": {
+                  "type": "integer",
+                  "description": "Coalescing will only begin, if the delta size is above this threashold (K)"
+                },
+                "disabled": {},
+                "interval": {},
+                "servicePort": {},
+                "port": {},
+                "at" : {},
+                "throttle": {},
+                "storage": {},
+                "resources": {}    
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sasha-wu-archiver": {
+      "oneOf": [
+        {
+          "type": "object",
+          "allOf": [
+            { "$ref": "#/definitions/sashacommon" },
+            { "$ref": "#/definitions/sasha-limitcutoff" },
+            {
+              "properties": 
+              {
+                "backup": {
+                  "type": "integer",
+                  "description": "minimum workunit age to backup (days, 0 disables)",
+                  "default": "0"
+                },
+                "duration": {
+                  "type": "integer",
+                  "description": "Maximum duration to run WorkUnit archiving session (hours, 0 unlimited)",
+                  "default": "0"
+                },
+                "keepResultFiles": {
+                  "type": "boolean",
+                  "description": "option to keep result files owned by workunits after workunit is archived",
+                  "default": "false"
+                },
+                "retryinterval": {
+                  "type": "integer",
+                  "description": "minimal time before retrying archive of failed WorkUnits (days)",
+                  "default": "7"
+                },
+                "disabled": {},
+                "interval": {},
+                "servicePort": {},
+                "port": {},
+                "at" : {},
+                "throttle": {},
+                "storage": {},
+                "resources": {},
+                "limit": {},
+                "cutoff": {}    
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sasha-dfuwu-archiver": {
+      "oneOf": [
+        {
+          "type": "object",
+          "allOf": [ 
+            { "$ref": "#/definitions/sashacommon" },
+            { "$ref": "#/definitions/sasha-limitcutoff" },
+            {
+              "properties": 
+              {
+                "disabled": {},
+                "interval": {},
+                "servicePort": {},
+                "port": {},
+                "at" : {},
+                "throttle": {},
+                "storage": {},
+                "resources": {},
+                "limit": {},
+                "cutoff": {}
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sasha-dfurecovery-archiver": {
+      "oneOf": [
+        {
+          "type": "object",
+          "allOf": [
+            { "$ref": "#/definitions/sashacommon" },
+            { "$ref": "#/definitions/sasha-limitcutoff" },
+            {
+              "properties": {
+                "disabled": {},
+                "interval": {},
+                "servicePort": {},
+                "port": {},
+                "at" : {},
+                "throttle": {},
+                "storage": {},
+                "resources": {},
+                "limit": {},
+                "cutoff": {}    
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sasha-file-expiry": {
+      "oneOf": [
+        {
+          "type": "object",
+          "allOf": [{ "$ref": "#/definitions/sashacommon" }],
+          "properties": {
+            "persistExpiryDefault": {
+              "type": "integer",
+              "description": "Default number of days to delete unused persist files",
+              "default": "7"
+            },
+            "expiryDefault": {
+              "type": "integer",
+              "description": "Default number of days to delete unused standard files that are flagged with EXPIRY",
+              "default": "14"
+            },
+            "user": {
+              "type": "string",
+              "description": "A username authorized to access and remove expired files"
+            },
+            "disabled": {},
+            "interval": {},
+            "servicePort": {},
+            "port": {},
+            "at" : {},
+            "throttle": {},
+            "storage": {},
+            "resources": {}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sashaservice": {
+      "oneOf": [
+        {
+          "description": "sasha services",
+          "type": "object",
+          "properties": {
+            "coalescer": {
+              "$ref": "#/definitions/sasha-coalescer"
+            },
+            "wu-archiver": {
+              "$ref": "#/definitions/sasha-wu-archiver"
+            },
+            "dfuwu-archiver": {
+              "$ref": "#/definitions/sasha-dfuwu-archiver"
+            },
+            "dfurecovery-archiver": {
+              "$ref": "#/definitions/sasha-dfurecovery-archiver"
+            },
+            "file-expiry": {
+              "$ref": "#/definitions/sasha-file-expiry"
+            },
+            "disabled": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "placement": {
+      "type": "object",
+      "properties": {
+        "nodeSelector": {
+          "$ref": "#/definitions/nodeSelector"
+        },
+        "tolerations": {
+          "$ref": "#/definitions/tolerations"
+        },
+        "affinity": {
+          "type": "object"
+        },
+        "schedulerName": {
+          "type": "string"
+        }
+      }
+    },
+    "nodeSelector": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "tolerations": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/toleration" }
+    },
+    "toleration": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "effect": {
+          "type": "string"
+        },
+        "tolerationSeconds": {
+          "type": "integer"
+        }
+      }
+    },
+    "issuer": {
+      "type": "object",
+      "required": [ "name" ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the issuer which will be referenced in certificate objects"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+              "Issuer",
+              "ClusterIssuer"
+          ]
+        },
+        "spec": {
+          "description": "The cert-manager spec for the issuer. Should match issuer spec(s) defined by https://cert-manager.io/docs/configuration/",
+          "type": "object"
         }
       }
     }

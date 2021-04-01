@@ -1,0 +1,55 @@
+{{- $sashaServices := $.Values.sasha | default dict -}}
+{{- if not $sashaServices.disabled -}}
+{{ range $sashaName, $_sasha := $sashaServices -}}
+{{ $sasha := ($_sasha | default dict) -}}
+{{- if not $sasha.disabled -}}
+{{- $_ := set $sasha "name" $sashaName -}}
+{{- $_ := set $sasha "access" (splitList " " (include "hpcc.getSashaServiceAccess" $sasha)) -}}
+{{- $secretsCategories := append ((or (has "data" $sasha.access) (has "dalidata" $sasha.access)) | ternary (list "storage") list) "system" -}}
+{{- $commonCtx := dict "root" $ "me" $sasha "secretsCategories" $secretsCategories -}}
+{{- $configSHA := include "hpcc.sashaConfigMap" $commonCtx | sha256sum -}}
+{{- $serviceName := printf "sasha-%s" $sashaName -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $serviceName | quote }}
+spec:
+  replicas: {{ $sasha.replicas | default 1 }}
+  selector:
+    matchLabels:
+      run: {{ $serviceName | quote }}
+  template:
+    metadata:
+      labels:
+        run: {{ $serviceName | quote }}
+        accessDali: {{ (has "dali" $sasha.access) | ternary "yes" "no" | quote }}
+      annotations:
+        checksum/config: {{ $configSHA }}
+    spec:
+      {{- include "hpcc.placementsByPodTargetType" (dict "root" $ "pod" $serviceName "type" "sasha") | indent 6 }}
+      serviceAccountName: "hpcc-default"
+      containers:
+{{- include "hpcc.addSashaContainer" $commonCtx | indent 6 }}
+        volumeMounts:
+{{- include "hpcc.addSashaVolumeMounts" $commonCtx | indent 8 }}
+{{ include "hpcc.addSecretVolumeMounts" $commonCtx | indent 8 }}
+      volumes:
+{{- include "hpcc.addSashaVolumes" $commonCtx | indent 6 }}
+{{- include "hpcc.addSecretVolumes"  $commonCtx | indent 6 }}
+---
+{{- if and (not $sasha.disabled) ($sasha.servicePort) -}}
+{{ include "hpcc.addSashaService" $commonCtx }}
+---
+{{- end }}
+kind: ConfigMap 
+{{ include "hpcc.sashaConfigMap" $commonCtx }}
+---
+{{- if $sasha.storage }}
+{{- if and (not $sasha.storage.existingClaim) (not $sasha.storage.plane) }}
+{{ include "hpcc.addPVC" (dict "root" $ "name" (printf "sasha-%s" $sasha.name) "me" $sasha.storage) }}
+{{- end }}
+---
+{{ end -}}
+{{- end }}
+{{- end }}
+{{- end -}}
