@@ -54,10 +54,10 @@ available via ConfigMap mechanism. So far, this only contains
 
 but we can add more.
 
-ROXIE modes under K8s
+roxie modes under K8s
 ---------------------
 
-When running under K8s, ROXIE has 3 fundamental modes of operation:
+When running under K8s, roxie has 3 fundamental modes of operation:
 
   1. Scalable array of one-way roxie servers
 
