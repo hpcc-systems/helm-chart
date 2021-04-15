@@ -54,26 +54,26 @@ available via ConfigMap mechanism. So far, this only contains
 
 but we can add more.
 
-Roxie modes under K8s
+ROXIE modes under K8s
 ---------------------
 
-When running under K8s, Roxie has 3 fundamental modes of operation:
+When running under K8s, ROXIE has 3 fundamental modes of operation:
 
   1. Scalable array of one-way roxie servers
 
-     Set localSlave=true, replicas=initial number of pods
+     Set localAgents=true, replicas=initial number of pods
 
-  2. Per-channel-scalable array of combined servers/slaves
+  2. Per-channel-scalable array of combined servers/agents
 
-     localSlave=false, numChannels=nn, replicas=initial number of pods per channel (default 2)
+     localAgent=false, numChannels=nn, replicas=initial number of pods per channel (default 2)
 
      There will be numChannels*replicas pods in total
 
-  3. Scalable array of servers with per-channel-scalable array of slaves
+  3. Scalable array of servers with per-channel-scalable array of agents
 
-     localSlave=false, numChannels=nn, replicas=pods/channel, serverReplicas=initial number of server pods
+     localAgent=false, numChannels=nn, replicas=pods/channel, serverReplicas=initial number of server pods
 
-     There will be numChannels*replicas slave pods and serverReplicas server pods in total
+     There will be numChannels*replicas agent pods and serverReplicas server pods in total
   
      This mode is somewhat experimental at present!
   
