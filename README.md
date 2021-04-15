@@ -54,12 +54,12 @@ available via ConfigMap mechanism. So far, this only contains
 
 but we can add more.
 
-roxie modes under K8s
+Roxie modes under K8s
 ---------------------
 
 When running under K8s, roxie has 3 fundamental modes of operation:
 
-  1. Scalable array of one-way roxie servers
+  1. Scalable array of one-way Roxie servers
 
      Set localAgents=true, replicas=initial number of pods
 
