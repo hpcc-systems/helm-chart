@@ -142,6 +142,11 @@
       "type": "array",
       "items": { "$ref": "#/definitions/eclccserver" }
     },
+    "eclscheduler": {
+      "description": "eclscheduler process",
+      "type": "array",
+      "items": { "$ref": "#/definitions/eclscheduler" }
+    },
     "esp": {
       "description": "esp process",
       "type": "array",
@@ -412,7 +417,11 @@
         "umask" : {
           "description": "file creation mask (used by despray)",
           "type" : "string"
-        }
+        },
+        "defaultSprayParts" : {
+            "description": "Number of parts sprayed by default",
+            "type" : "integer"
+          }
       },
       "required": [ "name", "prefix" ],
       "additionalProperties": false
@@ -597,6 +606,26 @@
         "useChildProcesses": {
           "type": "boolean",
           "description": "Launch each workunit compile as a child process rather than in its own container"
+        },
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "logging": {
+          "$ref": "#/definitions/logging"
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
+        }
+      }
+    },
+    "eclscheduler": {
+      "type": "object",
+      "required": [ "name" ],
+      "additionalProperties": { "type": ["integer", "string", "boolean"] },
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the eclccserver process"
         },
         "image": {
           "$ref": "#/definitions/image"
