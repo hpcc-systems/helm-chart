@@ -49,6 +49,14 @@ global:
   # to run as root in a sidecar in same process space as other containers, allowing it to for example send signals
   # to processes in sidecars
 
+  # Define global default metrics configuration for all components
+  metrics:
+    sinks:
+      - type: log
+        name: logging
+        settings:
+          period: 60
+
   # misc:
   #   postJobCommand: "curl -sf -XPOST http://127.0.0.1:15020/quitquitquit"
   # Or example for linkerd
@@ -96,6 +104,8 @@ storage:
   #   hosts: <name>                         # Name of the host group for bare metal - must match the name of the storage plane..
   #   secret: <secret-id>                   # what secret is required to access the files.  This could optionally become a list if required (or add secrets:).
   #   defaultSprayParts: 4                  # The number of partitions created when spraying (default: 1)
+  #   cost:                                 # The storage cost
+  #     storageAtRest: 0.113                # Storage at rest cost: cost per GiB/month
   #   options:                              # not sure if it is needed
 
   dllStorage:
