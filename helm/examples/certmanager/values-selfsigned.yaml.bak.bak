@@ -1,7 +1,0 @@
-certificates:
-  issuers:
-    local:
-      spec:
-        ca: null
-        selfSigned: {}
-
