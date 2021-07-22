@@ -316,6 +316,11 @@
     "security": {
       "type": "object",
       "properties": {
+        "mtls": {
+          "description": "enable global mtls between clients (except roxie which has own setting). NB: requires certificates.enabled=true",
+          "type": "boolean",
+          "default": true
+        },
         "eclSecurity": {
           "$ref": "#/definitions/eclSecurity"
         }
@@ -572,6 +577,25 @@
       },
       "additionalProperties": { "type": ["integer", "string", "boolean"] }
     },
+    "compileOption": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Compiler option name"
+        },
+        "value": {
+          "type": ["number", "string", "boolean"],
+          "description": "Compiler option  value"
+        },
+        "cluster": {
+          "type": "string",
+          "description": "Cluster to apply option to"
+        }
+      },
+      "required": [ "name", "value" ],
+      "additionalProperties": false
+    },
     "env": {
       "type": "array",
       "items": {
@@ -688,6 +712,10 @@
         "labels": {
           "type": "object",
           "additionalProperties": { "type": "string" }
+        },
+        "options": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/compileOption" }
         },
         "resources": {
           "$ref": "#/definitions/resources"
