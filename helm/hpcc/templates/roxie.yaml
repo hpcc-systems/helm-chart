@@ -37,9 +37,7 @@ data:
       numChannels: {{ .numChannels }}
       topologyServers: "{{ .toponame }}:{{ .topoport }}"
       resolveLocally: false
-{{- $certificates := (.root.Values.certificates | default dict) -}}
-{{- $issuers := ($certificates.issuers | default dict) -}}
-{{- $mtlsEnabled := (and ($certificates.enabled) (hasKey $issuers "local")) -}}
+{{- $mtlsEnabled := (eq (include "hpcc.isMtlsEnabled" (dict "root" .root)) "true") -}}
 {{/* By default use encryption if local certificates are enabled, but allow it to be turned off via roxie .encryptInTransit value */}}
 {{- if (hasKey .me "encryptInTransit") -}}
   {{- if and (.me.encryptInTransit) (not $mtlsEnabled) -}}
@@ -105,7 +103,7 @@ spec:
       labels:
         run: {{ $commonCtx.toponame | quote }}
         roxie-cluster: {{ $roxie.name | quote }}
-        helmVersion: 8.2.6
+        helmVersion: 8.2.8
 {{- if hasKey $toposerver "labels" }}
 {{ toYaml $toposerver.labels | indent 8 }}
 {{- end }}
@@ -215,7 +213,7 @@ spec:
         roxie-cluster: {{ $roxie.name | quote }}
         accessDali: "yes"
         accessEsp: "yes"
-        helmVersion: 8.2.6
+        helmVersion: 8.2.8
 {{- if hasKey $roxie "labels" }}
 {{ toYaml $roxie.labels | indent 8 }}
 {{- end }}
@@ -306,7 +304,7 @@ spec:
         roxie-cluster: {{ $roxie.name | quote }}
         accessDali: "yes"
         accessEsp: "yes"
-        helmVersion: 8.2.6
+        helmVersion: 8.2.8
 {{- if hasKey $roxie "labels" }}
 {{ toYaml $roxie.labels | indent 8 }}
 {{- end }}
