@@ -104,7 +104,7 @@ spec:
       labels:
         run: {{ $commonCtx.toponame | quote }}
         roxie-cluster: {{ $roxie.name | quote }}
-        helmVersion: 8.2.16
+        helmVersion: 8.2.18
 {{- if hasKey $toposerver "labels" }}
 {{ toYaml $toposerver.labels | indent 8 }}
 {{- end }}
@@ -121,7 +121,7 @@ spec:
 {{ include "hpcc.addSentinelProbes" $toposerver | indent 8 }}
 {{- include "hpcc.addSecurityContext" $commonCtx | indent 8 }}
 {{- if not $.Values.global.privileged }}
-{{- include "hpcc.addStubResources" . | indent 8 }}
+{{- include "hpcc.addStubResources" (dict "instances" 1) | indent 8 }}
 {{- end }}
 {{ include "hpcc.addImageAttrs" $commonCtx | indent 8 }}
         workingDir: /var/lib/HPCCSystems
@@ -214,7 +214,7 @@ spec:
         roxie-cluster: {{ $roxie.name | quote }}
         accessDali: "yes"
         accessEsp: "yes"
-        helmVersion: 8.2.16
+        helmVersion: 8.2.18
 {{- if hasKey $roxie "labels" }}
 {{ toYaml $roxie.labels | indent 8 }}
 {{- end }}
@@ -316,7 +316,7 @@ spec:
         roxie-cluster: {{ $roxie.name | quote }}
         accessDali: "yes"
         accessEsp: "yes"
-        helmVersion: 8.2.16
+        helmVersion: 8.2.18
 {{- if hasKey $roxie "labels" }}
 {{ toYaml $roxie.labels | indent 8 }}
 {{- end }}

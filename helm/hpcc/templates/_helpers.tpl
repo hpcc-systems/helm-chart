@@ -827,12 +827,13 @@ resources:
 
 {{/*
 Add resources object for stub pods
+Pass in dict with instances defined
 */}}
 {{- define "hpcc.addStubResources" }}
 resources:
   limits:
     cpu: "50m"
-    memory: "100M"
+    memory: {{ (printf "%dM" (mul .instances 100)) | quote }}
 {{- end -}}
 
 {{/*
@@ -997,7 +998,7 @@ kind: Service
 metadata:
   name: {{ .name | quote }}
   labels:
-    helmVersion: 8.2.16
+    helmVersion: 8.2.18
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}
 {{- end }}
