@@ -74,7 +74,7 @@ data:
 {{- $env := concat ($.Values.global.env | default list) (.env | default list) -}}
 {{- $application := .application | default "eclwatch" -}}
 {{- $secretsCategories := ternary (list "storage" "esp" "codeSign" "codeVerify" "authn")  (list "storage" "esp") (eq $application "eclwatch") -}}
-{{- $includeStorageCategories := ternary (list "lz" "data") (list "data") (eq $application "eclwatch") -}}
+{{- $includeStorageCategories := ternary (list "lz" "data" "dll") (list "data" "dll") (eq $application "eclwatch") -}}
 {{- $commonCtx := dict "root" $ "me" . "secretsCategories" $secretsCategories  "includeCategories" $includeStorageCategories "env" $env -}}
 {{- $configSHA := include "hpcc.getConfigSHA" ($commonCtx | merge (dict "configMapHelper" "hpcc.espConfigMap" "component" "esp" "excludeKeys" "global,esp.queues")) -}}
 {{- if (ne (include "hpcc.isVisibilityPublic" (dict "root" $ "visibility" .service.visibility)) "") }}
@@ -83,6 +83,8 @@ data:
 {{- else -}}
  {{- $_ := set $commonCtx "externalCert" false -}}
 {{- end -}}
+{{- $generateSigningCert := and (eq $application "eclwatch") (hasKey $.Values.certificates.issuers "signing") -}}
+{{- $signingCertGenerator := or ($generateSigningCert) (has $application (list "eclservices")) | ternary "eclwatch" "" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -99,18 +101,24 @@ spec:
         server: {{ .name | quote }}
         accessDali: "yes"
         app: {{ $application }}
-        helmVersion: 8.2.22
+        helmVersion: 8.4.2
+{{- if hasKey $.Values.global "metrics" }}
+ {{- include "hpcc.generateMetricsReporterLabel" $.Values.global.metrics | nindent 8 }}
+{{- end }}
 {{- if hasKey . "labels" }}
 {{ toYaml .labels | indent 8 }}
 {{- end }}
       annotations:
         checksum/config: {{ $configSHA }}
+{{- if hasKey  $.Values.global "metrics" }}
+ {{- include "hpcc.addPrometheusScrapeAnnotations" $.Values.global.metrics | nindent 8 }}
+{{- end }}
 {{- if hasKey . "annotations" }}
 {{ toYaml .annotations | indent 8 }}
 {{- end }}
     spec:
       {{- include "hpcc.placementsByPodTargetType" (dict "root" $ "pod" .name "type" "esp") | indent 6 }}
-      serviceAccountName: "hpcc-default"
+      serviceAccountName: "hpcc-esp-service"
       containers:
       - name: {{ .name | quote }}
         workingDir: /var/lib/HPCCSystems
@@ -131,20 +139,24 @@ spec:
         volumeMounts:
 {{ include "hpcc.addConfigMapVolumeMount" . | indent 8 }}
 {{ include "hpcc.addVolumeMounts" $commonCtx | indent 8 }}
-{{ include "hpcc.addDllVolumeMount" $commonCtx | indent 8 }}
 {{ include "hpcc.addSecretVolumeMounts" $commonCtx | indent 8 }}
 {{ include "hpcc.addCertificateVolumeMount" (dict "root" $ "component" $application "name" .name "certificate" .certificate "visibility" .service.visibility) | indent 8 }}
 {{- if $commonCtx.externalCert }}
  {{- include "hpcc.addCertificateVolumeMount" (dict "root" $ "component" $application "name" .name "external" false) | nindent 8 }}
 {{- end }}
+{{- if $signingCertGenerator }}
+ {{- include "hpcc.addCertificateVolumeMount" (dict "root" $ "component" $signingCertGenerator "name" "global" "issuer" "signing") | nindent 8 }}
+{{- end }}
       volumes:
 {{ include "hpcc.addConfigMapVolume" . | indent 6 }}
 {{ include "hpcc.addVolumes" $commonCtx | indent 6 }}
-{{ include "hpcc.addDllVolume" $commonCtx | indent 6 }}
 {{ include "hpcc.addSecretVolumes" $commonCtx | indent 6 }}
 {{ include "hpcc.addCertificateVolume" (dict "root" $ "component" $application "name" .name "certificate" .certificate "visibility" .service.visibility) | indent 6 }}
 {{- if $commonCtx.externalCert }}
  {{- include "hpcc.addCertificateVolume" (dict "root" $ "component" $application "name" .name "external" false) | nindent 6 }}
+{{- end }}
+{{- if $signingCertGenerator }}
+ {{- include "hpcc.addCertificateVolume" (dict "root" $ "component" $signingCertGenerator "name" "global" "issuer" "signing") | nindent 6 }}
 {{- end }}
 ---
 kind: ConfigMap
@@ -160,6 +172,9 @@ kind: ConfigMap
 {{ include "hpcc.addCertificate" (dict "root" $ "name" .name "service" .service "component" $application "visibility" .service.visibility) }}
 {{- if $commonCtx.externalCert }}
  {{- include "hpcc.addCertificate" (dict "root" $ "name" .name "service" .service "component" $application "external" false) }}
+{{- end }}
+{{- if $generateSigningCert }}
+ {{- include "hpcc.addCertificate" (dict "root" $ "name" "global" "component" $application "issuer" "signing") }}
 {{- end }}
 {{- end }}
 {{- end }}

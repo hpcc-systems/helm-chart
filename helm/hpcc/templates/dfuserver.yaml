@@ -55,7 +55,7 @@ spec:
       labels:
         run: {{ .name | quote }}
         accessDali: "yes"
-        helmVersion: 8.2.22
+        helmVersion: 8.4.2
 {{- if hasKey . "labels" }}
 {{ toYaml .labels | indent 8 }}
 {{- end }}
@@ -68,7 +68,7 @@ spec:
       {{- include "hpcc.placementsByPodTargetType" (dict "root" $ "pod" .name "target" .name "type" "dfuserver") | indent 6 }}
       serviceAccountName: "hpcc-default"
       initContainers:
-        {{- include "hpcc.checkDataMount" $commonCtx | indent 6 }}
+      {{- include "hpcc.changePlaneMountPerms" $commonCtx | indent 6 }}
       containers:
       - name: {{ .name | quote }}
         workingDir: /var/lib/HPCCSystems

@@ -144,10 +144,14 @@ Returns true if the given certificate issuer is enabled, otherwise false
 */}}
 {{- define "hpcc.isIssuerEnabled" -}}
 {{- $certificates := (.root.Values.certificates | default dict) -}}
-{{- $issuers := ($certificates.issuers | default dict) -}}
-{{- $issuer := get $issuers .issuer -}}
-{{- if $issuer -}}
-  {{- (hasKey $issuer "enabled" | ternary $issuer.enabled true) }}
+{{- if $certificates.enabled -}}
+  {{- $issuers := ($certificates.issuers | default dict) -}}
+  {{- $issuer := get $issuers .issuer -}}
+  {{- if $issuer -}}
+    {{- (hasKey $issuer "enabled" | ternary $issuer.enabled true) }}
+  {{- else -}}
+false
+  {{- end -}}
 {{- else -}}
 false
 {{- end -}}
@@ -313,14 +317,6 @@ to addVolumeMounts so that if a plane can be used for multiple purposes then dup
 {{- end -}}
 
 {{/*
-Add data volume mount
-Pass in root
-*/}}
-{{- define "hpcc.addDataVolumeMount" -}}
-{{- include "hpcc.addVolumeMounts" (dict "root" .root "includeCategories" (list "data" "lz")) -}}
-{{- end -}}
-
-{{/*
 Add volumes
 Pass in root, includeCategories (optional) and includeNames (optional)
 The plane will generate a volume if it matches either an includeLabel or an includeName
@@ -358,14 +354,6 @@ The plane will generate a volume if it matches either an includeLabel or an incl
 {{- end -}}
 
 {{/*
-Add data volume
-Pass in dict with root
-*/}}
-{{- define "hpcc.addDataVolume" -}}
-{{- include "hpcc.addVolumes" (dict "root" .root "includeCategories" (list "data" "lz") ) -}}
-{{- end -}}
-
-{{/*
 Add a volume mount - if default plane is used, or the storage plane specifies a pvc
 Pass in dict with root, planeName
 */}}
@@ -381,38 +369,6 @@ Pass in dict with root, planeName
 {{- end -}}
 
 {{/*
-Add dll volume mount - if default plane is used, or the dll storage plane specifies a pvc
-Pass in dict with root
-*/}}
-{{- define "hpcc.addDllVolumeMount" -}}
-{{- include "hpcc.addVolumeMounts" (dict "root" .root "includeCategories" (list "dll")) -}}
-{{- end -}}
-
-{{/*
-Add dali volume mount - if default plane is used, or the dali storage plane specifies a pvc
-Pass in dict with root
-*/}}
-{{- define "hpcc.addDaliVolumeMount" -}}
-{{- include "hpcc.addVolumeMounts" (dict "root" .root "includeCategories" (list "dali")) -}}
-{{- end -}}
-
-{{/*
-Add dll volume - if default plane is used, or the dll storage plane specifies a pvc
-Pass in dict with root
-*/}}
-{{- define "hpcc.addDllVolume" -}}
-{{- include "hpcc.addVolumes" (dict "root" .root "includeCategories" (list "dll") ) }}
-{{- end -}}
-
-{{/*
-Add dali volume - if default plane is used, or the dali storage plane specifies a pvc
-Pass in dict with root
-*/}}
-{{- define "hpcc.addDaliVolume" -}}
-{{- include "hpcc.addVolumes" (dict "root" .root "includeCategories" (list "dali") ) }}
-{{- end -}}
-
-{{/*
 Add the secret volume mounts for a component
 Pass in dict with root and secretsCategories
 */}}
@@ -420,12 +376,34 @@ Pass in dict with root and secretsCategories
 {{- $secretsCategories := .secretsCategories -}}
 {{- range $category, $key := .root.Values.secrets -}}
  {{- if (has $category $secretsCategories) -}}
-{{- range $secretid, $secretname := $key -}}
+  {{- range $secretid, $secretname := $key }}
 - name: secret-{{ $secretid }}
   mountPath: /opt/HPCCSystems/secrets/{{ $category }}/{{ $secretid }}
-{{ end -}}
+  {{ end -}}
  {{- end -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Generate Prometheus scrape annotations
+Enables selfdiscovery of metrics service on configured path/port
+Requires sinks[type=prometheus]
+Pass in dict with sinks
+*/}}
+{{- define "hpcc.addPrometheusScrapeAnnotations" -}}
+{{- if hasKey . "sinks" }}
+ {{ range $sink := .sinks -}}
+  {{- if eq (get $sink "type") "prometheus" }}
+   {{- if and (hasKey $sink "settings") ( hasKey $sink.settings "autodiscovery") }}
+    {{- if (eq $sink.settings.autodiscovery true ) }}
+prometheus.io/scrape: 'true'
+prometheus.io/path: {{ $sink.settings.path | default "/metrics" }}
+prometheus.io/port: {{ $sink.settings.port | default 8767 | quote }}
+    {{ end }}
+   {{ end }}
+  {{ end }}
+ {{ end}}
+{{ end}}
 {{- end -}}
 
 {{/*
@@ -588,6 +566,7 @@ A kludge to ensure mounted storage (e.g. for nfs, minikube or docker for desktop
       mountPath: {{ .volumePath | quote }}
 {{- end }}
 
+
 {{/*
 A kludge to ensure mounted storage (e.g. for nfs, minikube or docker for desktop) has correct permissions for PV
 */}}
@@ -599,13 +578,13 @@ A kludge to ensure mounted storage (e.g. for nfs, minikube or docker for desktop
 {{- range $plane := $planes -}}
  {{- if and ($plane.forcePermissions) (or ($plane.pvc) (hasKey $plane "storageClass")) -}}
   {{- $mountpath := $plane.prefix -}}
-  {{- if or (has $plane.category $includeCategories) (has $plane.name $includeNames) }}
-{{- $volumeName := (printf "%s-pv" $plane.name) -}}
-{{ include "hpcc.changeMountPerms" (dict "root" .root "volumeName" $volumeName "volumePath" $plane.prefix) }}
-{{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
+  {{- if or (has $plane.category $includeCategories) (has $plane.name $includeNames) -}}
+   {{- $volumeName := (printf "%s-pv" $plane.name) -}}
+   {{- include "hpcc.changeMountPerms" (dict "root" .root "volumeName" $volumeName "volumePath" $plane.prefix) | nindent 0 }}
+  {{- end -}}
+ {{- end -}}
+{{- end -}}
+{{- end -}}
 
 
 {{/*
@@ -652,29 +631,6 @@ Add wait-and-run shared inter container volume
 - name: wait-and-run
   emptyDir: {}
 {{- end }}
-
-{{/*
-Check dll mount point, using hpcc.changeMountPerms
-*/}}
-{{- define "hpcc.checkDllMount" -}}
-{{ include "hpcc.changePlaneMountPerms" (dict "root" .root "includeCategories" (list "dll")) }}
-{{- end }}
-
-{{/*
-Check datastorage mount point, using hpcc.changeMountPerms
-Pass in a dictionary with root
-*/}}
-{{- define "hpcc.checkDataMount" -}}
-{{ include "hpcc.changePlaneMountPerms" (dict "root" .root "includeCategories" (list "data" "lz")) }}
-{{- end }}
-
-{{/*
-Check dalistorage mount point, using hpcc.changeMountPerms
-*/}}
-{{- define "hpcc.checkDaliMount" -}}
-{{ include "hpcc.changePlaneMountPerms" (dict "root" .root "includeCategories" (list "dali")) }}
-{{- end }}
-
 
 {{/*
 Add any bundles
@@ -739,6 +695,9 @@ Generate instance queue names
   prefix: {{ .prefix | default "null" }}
   queriesOnly: true
   dataPlane: {{ .dataPlane | default (include "hpcc.getDefaultDataPlane" $) }}
+  {{- if hasKey . "directAccessPlanes" }}
+  directAccessPlanes: {{ .directAccessPlanes }}
+  {{- end }}
  {{- end }}
 {{ end -}}
 {{- range $.Values.thor -}}
@@ -811,6 +770,14 @@ Generate list of available services
 {{ end -}}
 {{ end -}}
 {{- end -}}
+{{- range $.Values.dafilesrv -}}
+ {{- if not .disabled -}}
+- name: {{ .name }}
+  type: dafilesrv
+  port: {{ .servicePort | default 7600 }}
+  public: {{ (ne ( include "hpcc.isVisibilityPublic" (dict "root" $ "visibility" .service.visibility))  "") | ternary "true" "false" }}
+ {{- end -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -827,13 +794,19 @@ resources:
 
 {{/*
 Add resources object for stub pods
-Pass in dict with instances defined
+Pass in dict with root, me and instances defined
 */}}
-{{- define "hpcc.addStubResources" }}
+{{- define "hpcc.addStubResources" -}}
+{{- $stubInstanceResources := .root.Values.global.stubInstanceResources | default dict -}}
+{{- $milliCPUPerInstance := $stubInstanceResources.cpu | default "50m" -}}
+{{- $memPerInstance := $stubInstanceResources.memory | default "200Mi" -}}
+{{- $milliCPUs := int (include "hpcc.k8sCPUStringToMilliCPU" $milliCPUPerInstance) -}}
+{{- $bytes := int64 (include "hpcc.k8sMemoryStringToBytes" $memPerInstance) -}}
+{{- $totalBytes := mul .instances $bytes }}
 resources:
   limits:
-    cpu: "50m"
-    memory: {{ (printf "%dM" (mul .instances 100)) | quote }}
+    cpu: {{ printf "%dm" (mul .instances $milliCPUs) | quote }}
+    memory: {{ include "hpcc.bytesToK8sMemoryString" $totalBytes | quote }}
 {{- end -}}
 
 {{/*
@@ -899,54 +872,25 @@ Pass in dict with root, me and dali if container in dali pod
 {{ include "hpcc.addImageAttrs" (dict "root" .root "me" (.dali | default .me)) | indent 2 }}
 {{- end -}}
 
-{{/*
-A template to generate Sasha service
-Pass in dict with root and me
-*/}}
-{{- define "hpcc.addSashaVolumeMounts" }}
-{{- $serviceName := printf "sasha-%s" .me.name -}}
-{{- if hasKey .me "plane" }}
-{{- $sashaStoragePlane := .me.plane | default (include "hpcc.getFirstPlaneForCategory" (dict "root" .root "category" "sasha")) }}
-{{ include "hpcc.addVolumeMounts" (dict "root" .root "includeNames" (list $sashaStoragePlane)) -}}
-{{- end }}
-{{ with (dict "name" $serviceName ) -}}
-{{ include "hpcc.addConfigMapVolumeMount" . }}
-{{- end }}
-{{- if has "dalidata" .me.access }}
-{{ include "hpcc.addDaliVolumeMount" . -}}
-{{- end }}
-{{- if has "data" .me.access }}
-{{ include "hpcc.addDataVolumeMount" . }}
-{{- end }}
-{{- if has "dll" .me.access }}
-{{ include "hpcc.addDllVolumeMount" . -}}
-{{- end -}}
-{{- end }}
-
 
 {{/*
-A template to generate Sasha service
-Pass in dict with root and me
+A template to translate dali access types into required planes
+Pass in dict with access
 */}}
-{{- define "hpcc.addSashaVolumes" }}
-{{- $serviceName := printf "sasha-%s" .me.name -}}
-{{- if hasKey .me "plane" }}
-{{- $sashaStoragePlane := .me.plane | default (include "hpcc.getFirstPlaneForCategory" (dict "root" .root "category" "sasha")) }}
-{{ include "hpcc.addVolumes" (dict "root" .root "includeNames" (list $sashaStoragePlane) ) }}
+{{- define "hpcc.getSashaPlanesFromAccess" }}
+{{- $tmpCtx := dict "planeTypes" list -}}
+{{- if has "dalidata" .access -}}
+ {{- $_ := set $tmpCtx "planeTypes" (append $tmpCtx.planeTypes "dali" ) -}}
 {{- end }}
-{{ with (dict "name" $serviceName) -}}
-{{ include "hpcc.addConfigMapVolume" . }}
+{{- if has "data" .access }}
+ {{- $_ := set $tmpCtx "planeTypes" (append $tmpCtx.planeTypes "data" ) -}}
 {{- end }}
-{{- if has "dalidata" .me.access }}
-{{ include "hpcc.addDaliVolume" . -}}
-{{- end }}
-{{- if has "data" .me.access }}
-{{ include "hpcc.addDataVolume" . }}
-{{- end }}
-{{- if has "dll" .me.access }}
-{{ include "hpcc.addDllVolume" . -}}
-{{- end }}
+{{- if has "dll" .access }}
+ {{- $_ := set $tmpCtx "planeTypes" (append $tmpCtx.planeTypes "dll" ) -}}
 {{- end -}}
+{{- join " " $tmpCtx.planeTypes -}}
+{{- end }}
+
 
 {{/*
 A template to generate the type of a service based on the visibility setting
@@ -974,8 +918,9 @@ A template to generate a service
 Pass in dict with .root, .name, .service, .defaultPort, .selector defined
 */}}
 {{- define "hpcc.addService" }}
-{{- $lvars := dict "type" "ClusterIP" "labels" dict "annotations" dict -}}
+{{- $lvars := dict "type" "ClusterIP" "labels" dict "annotations" dict "ingress" list "serviceName" .name -}}
 {{- if hasKey . "service" -}}
+ {{- if hasKey .service "name" -}}{{- $_ := set $lvars "servicename" .service.name -}}{{- end -}}
  {{- if hasKey .service "labels" -}}{{- $_ := set $lvars "labels" (merge $lvars.labels .service.labels) -}}{{- end -}}
  {{- if hasKey .service "annotations" -}}{{- $_ := set $lvars "annotations" (merge $lvars.annotations .service.annotations) -}}{{- end -}}
  {{- if hasKey .service "visibility" -}}
@@ -984,6 +929,7 @@ Pass in dict with .root, .name, .service, .defaultPort, .selector defined
     {{- $globalServiceInfo := get .root.Values.global.visibilities .service.visibility -}}
     {{- if hasKey $globalServiceInfo "labels" -}}{{- $_ := set $lvars "labels" (merge $lvars.labels $globalServiceInfo.labels) -}}{{- end -}}
     {{- if hasKey $globalServiceInfo "annotations" -}}{{- $_ := set $lvars "annotations" (merge $lvars.annotations $globalServiceInfo.annotations) -}}{{- end -}}
+    {{- if hasKey $globalServiceInfo "ingress" -}}{{- $_ := set $lvars "ingress" $globalServiceInfo.ingress -}}{{- end -}}
     {{- $_ := set $lvars "type" $globalServiceInfo.type -}}
    {{- else -}}
     {{- required (printf "Specified service visibility %s not found in global visibilities section" .service.visibility) nil -}}
@@ -992,13 +938,14 @@ Pass in dict with .root, .name, .service, .defaultPort, .selector defined
    {{- required "global visibilities section not found" nil -}}
   {{- end -}}
  {{- end -}}
-{{- end -}}
+ {{- if hasKey .service "ingress" -}}{{- $_ := set $lvars "ingress" .service.ingress -}}{{- end -}}
+{{- end }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .name | quote }}
+  name: {{ $lvars.serviceName | quote }}
   labels:
-    helmVersion: 8.2.22
+    helmVersion: 8.4.2
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}
 {{- end }}
@@ -1014,8 +961,37 @@ spec:
   selector:
     server: {{ .selector | quote }}
   type: {{ $lvars.type }}
+{{- if $lvars.ingress }} 
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $lvars.serviceName | quote }}
+spec:
+  podSelector:
+    matchLabels:
+      server: {{ .selector | quote }}
+  ingress:
+{{ toYaml $lvars.ingress | indent 2 }}
+{{- end -}}
 {{- end -}}
 
+{{/*
+Generate prometheusMetricsReporter label if metrics.sinks[type=prometheus].
+Ranges over metric sinks map
+Pass in dict with sinks
+*/}}
+{{- define "hpcc.generateMetricsReporterLabel" }}
+ {{ range $sink := .sinks -}}
+  {{- if eq (get $sink "type") "prometheus" }}
+   {{- if and (hasKey $sink "settings") ( hasKey $sink.settings "autodiscovery") }}
+    {{- if (eq $sink.settings.autodiscovery true ) }}
+prometheusMetricsReporter: "yes"
+    {{ end }}
+   {{ end }}
+  {{ end }}
+ {{ end }}
+{{- end -}}
 
 {{/*
 Return access permssions for a given service
@@ -1091,16 +1067,19 @@ Pass in dict with me for current placements and dict with new for the new placem
 */}}
 {{- define "hpcc.mergePlacementSetting" -}}
 {{- if .me.placement.nodeSelector }}
-{{- $_ := set .new "nodeSelector" (mergeOverwrite (.new.nodeSelector | default dict ) .me.placement.nodeSelector)  }}
+ {{- $_ := set .new "nodeSelector" (mergeOverwrite (.new.nodeSelector | default dict ) .me.placement.nodeSelector)  }}
 {{- end -}}
 {{- if .me.placement.tolerations }}
-{{- $_ := set .new "tolerations" (concat (.new.tolerations | default list ) .me.placement.tolerations)  }}
+ {{- $_ := set .new "tolerations" (concat (.new.tolerations | default list ) .me.placement.tolerations)  }}
 {{- end -}}
 {{- if .me.placement.affinity }}
-{{- $_ := set .new "affinity" .me.placement.affinity  }}
+ {{- $_ := set .new "affinity" .me.placement.affinity  }}
 {{- end -}}
 {{- if .me.placement.schedulerName }}
-{{- $_ := set .new "schedulerName" .me.placement.schedulerName }}
+ {{- $_ := set .new "schedulerName" .me.placement.schedulerName }}
+{{- end -}}
+{{- if .me.placement.topologySpreadConstraints }}
+ {{- $_ := set .new "topologySpreadConstraints" (concat (.new.topologySpreadConstraints | default list ) .me.placement.topologySpreadConstraints)  }}
 {{- end -}}
 {{- end -}}
 
@@ -1499,4 +1478,83 @@ A template to output a merged environment. Pass in a list with global then local
 - name: {{ $key }}
   value: {{ $value }}
 {{ end -}}
+{{- end -}}
+
+
+{{/*
+A template to convert a human readable K8s memory string to bytes
+Pass in value
+*/}}
+{{- define "hpcc.k8sMemoryStringToBytes" -}}
+{{- $ctx := dict -}}
+{{- if hasSuffix "i" . -}}
+ {{- if hasSuffix "Ki" . -}}
+  {{- $_ := set $ctx "scale" 1024 -}}
+ {{- else if hasSuffix "Mi" . -}}
+  {{- $_ := set $ctx "scale" 1048576 -}}
+ {{- else if hasSuffix "Gi" . -}}
+  {{- $_ := set $ctx "scale" 1073741824 -}}
+ {{- else if hasSuffix "Ti" . -}}
+  {{- $_ := set $ctx "scale" 1099511627776 -}}
+ {{- else if hasSuffix "Pi" . -}}
+  {{- $_ := set $ctx "scale" 1125899906842624 -}}
+ {{- else if hasSuffix "Ei" . -}}
+  {{- $_ := set $ctx "scale" 1152921504606846976 -}}
+ {{- else -}}
+  {{- $_ := fail (printf "Invalid size suffix on memory resoure specification: %s" .) -}}
+ {{- end -}}
+ {{- $_ := set $ctx "number" (substr 0 (int (sub (len .) 2)) .) -}}
+{{- else -}}
+ {{- if hasSuffix "K" . -}}
+  {{- $_ := set $ctx "scale" 100 -}}
+ {{- else if hasSuffix "M" . -}}
+  {{- $_ := set $ctx "scale" 1000000 -}}
+ {{- else if hasSuffix "G" . -}}
+  {{- $_ := set $ctx "scale" 1000000000 -}}
+ {{- else if hasSuffix "T" . -}}
+  {{- $_ := set $ctx "scale" 1000000000000 -}}
+ {{- else if hasSuffix "P" . -}}
+  {{- $_ := set $ctx "scale" 1000000000000000 -}}
+ {{- else if hasSuffix "E" . -}}
+  {{- $_ := set $ctx "scale" 1000000000000000000 -}}
+ {{- else -}}
+  {{- $_ := fail (printf "Invalid size suffix on memory resoure specification: %s" .) -}}
+ {{- end -}}
+ {{- $_ := set $ctx "number" (substr 0 (sub (len .) 1) .) -}}
+{{- end -}}
+{{- printf "%d" (mul $ctx.number $ctx.scale) -}}
+{{- end -}}
+
+{{/*
+A template to convert a human readable K8s cpu string to milli cpu units
+Pass in value
+*/}}
+{{- define "hpcc.k8sCPUStringToMilliCPU" -}}
+{{- if hasSuffix "m" . -}}
+ {{- $number := (substr 0 (int (sub (len .) 1)) .) -}}
+ {{- printf "%d" (int $number) -}}
+{{- else -}}
+ {{- printf "%d" (int (mulf (float64 .) 1000.0)) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+A template to convert bytes into a k8s human friendly string
+Pass in value
+*/}}
+{{- define "hpcc.bytesToK8sMemoryString" -}}
+{{- /* NB: Rounds down to units that are a 1000th of unit that value is larger than */ -}}
+{{- if ge . 1152921504606846976 -}}{{- /* >= 1Ei */ -}}
+ {{- printf "%dPi" (int (div . 1125899906842624)) -}}
+{{- else if ge . 1125899906842624 -}}{{- /* >= 1Pi */ -}}
+ {{- printf "%dTi" (int (div . 1099511627776)) -}}
+{{- else if ge . 1099511627776 -}}{{- /* >= 1Ti */ -}}
+ {{- printf "%dGi" (int (div . 1073741824)) -}}
+{{- else if ge . 1073741824 -}}{{- /* >= 1Gi */ -}}
+ {{- printf "%dMi" (int (div . 1048576)) -}}
+{{- else if ge . 1048576 -}}{{- /* >= 1Mi */ -}}
+ {{- printf "%dKi" (int (div . 1024)) -}}
+{{- else -}}
+ {{- printf "%d" (int .) -}}
+{{- end -}}
 {{- end -}}

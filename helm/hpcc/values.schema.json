@@ -215,6 +215,11 @@
       "description": "sasha services",
       "type": "object",
       "$ref": "#/definitions/sashaservice"
+    },
+    "dafilesrv": {
+      "description": "dafilesrv process",
+      "type": "array",
+      "items": { "$ref": "#/definitions/dafilesrv" }
     }
   },
   "required": [
@@ -231,6 +236,9 @@
         },
         "noResourceValidation": {
           "type": "boolean"
+        },
+        "stubInstanceResources": {
+          "$ref": "#/definitions/stubInstanceResources"
         },
         "image": {
           "$ref": "#/definitions/image"
@@ -257,9 +265,26 @@
           "description": "resource cost",
           "type": "object",
           "properties": {
+            "currencyCode": {
+                "description": "currency code (ISO 4217)",
+                "type": "string",
+                "maxLength": 3
+            },
             "perCpu": {
               "description": "cost of a single cpu",
               "type": "number"
+            },
+            "storageAtRest": {
+                "description": "storage cost (GiB per month)",
+                "type": "number"
+            },
+            "storageReads": {
+                "description": "cost per 10,000 read operations",
+                "type": "number"
+            },
+            "storageWrites": {
+                "description": "cost per 10,000 write operations",
+                "type": "number"
             }
           }
         },
@@ -308,6 +333,9 @@
               "labels": {
                 "type": "object",
                 "additionalProperties": { "type": "string" }
+              },
+              "ingress": {
+                "$ref" : "#/definitions/ingress"
               },
               "type": {
                 "type": "string"
@@ -459,14 +487,36 @@
               "type": "number"
             }
           }
+        },
+        "subDirPerFilePart" : {
+          "description": "Place each logical file part in its own subdirectory",
+          "type": "boolean",
+          "default": true
         }
-
       },
       "required": [ "name", "prefix", "category" ],
       "additionalProperties": false
     },
     "resources": {
       "type": "object"
+    },
+    "memory": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The amount of overall resourced memory to dedicate to the query"
+        },
+        "thirdParty": {
+          "type": "string",
+          "description": "The amount of overall resource memory to reserve for 3rd party use"
+        },
+        "maxMemPercentage": {
+          "type": "number",
+          "description": "The default maximum percentage of resource memory to dedicate to HPCC"
+        }
+      },
+      "additionalProperties": false
     },
     "secrets": {
       "oneOf": [
@@ -565,10 +615,20 @@
         }
       }
     },
+    "auth": {
+      "type": "string",
+      "description": "Authentication method",
+      "enum": ["none", "ldap"]
+    },
     "ldap": {
       "type": "object",
+      "required": [ "ldapAddress" ],
       "additionalProperties": { "type": ["integer", "string", "boolean"] },
       "properties": {
+        "ldapAddress": {
+          "type": "string",
+          "description": "LDAP Server IP address(es), comma separated"
+        },
         "ldapProtocol": {
           "type": "string",
           "description": "The protocol to use - standard \"LDAP\" or secure \"LDAPS\" over SSL"
@@ -599,7 +659,7 @@
         },
         "systemBasedn": {
           "type": "string",
-          "description": "The base distinguished name of the Active Directory systemUser"
+          "description": "The base distinguished name of the Active Directory Administrator"
         },
         "resourcesBasedn": {
           "type": "string",
@@ -611,11 +671,11 @@
         },
         "ldapAdminSecretKey": {
           "type": "string",
-          "description": "The key name to be used to look up the Active Directory system administrator account Username/Password"
+          "description": "The key name to be used to look up the Active Directory Administrator account Username/Password"
         },
         "ldapAdminVaultId": {
           "type": "string",
-          "description": "The optional vault name to be used to look up the Active Directory system administrator account Username/Password, using ldapAdminSecretKey"
+          "description": "The optional vault name to be used to look up the Active Directory Administrator account Username/Password, using ldapAdminSecretKey"
         },
         "ldapPort": {
           "type": "integer",
@@ -644,6 +704,10 @@
         "sharedCache": {
           "type": "boolean",
           "description": "Use a single, shared LDAP cache"
+        },
+        "checkScopeScans": {
+          "type": "boolean",
+          "description": "Only return iterated logical file metadata for files that user has scope permission to access"
         }
       }
     },
@@ -700,6 +764,15 @@
         }
       }
     },
+    "ingress": {
+      "type": "array",
+      "items": {
+        "additionalProperties": {
+          "type": "array",
+          "items": { "type": "object" }
+        }
+      }
+    },
     "egress": {
       "type": "object",
       "properties": {
@@ -722,9 +795,40 @@
       },
       "additionalProperties": false
     },
+    "service": {
+      "description": "Service properties",
+      "type": "object",
+      "required": [ "servicePort", "visibility" ],
+      "properties": {
+        "port": {
+          "type": "integer",
+          "description": "The local port used by the pod",
+          "default": 8880
+        },
+        "servicePort": {
+          "type": "integer",
+          "description": "The port that this service will be exposed on"
+        },
+        "visibility": {
+          "type": "string",
+          "description": "Should this service be exposed outside the cluster, locally or to the internet"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "ingress": {
+          "$ref" : "#/definitions/ingress"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
     "dali": {
       "type": "object",
-      "required": [ "name" ],
+      "required": [ "name", "auth" ],
       "additionalProperties": { "type": ["integer", "string", "boolean"] },
       "properties": {
         "name": {
@@ -739,6 +843,12 @@
         },
         "logging": {
           "$ref": "#/definitions/logging"
+        },
+        "auth": {
+          "$ref": "#/definitions/auth"
+        },
+        "ldap": {
+          "$ref": "#/definitions/ldap"
         },
         "annotations": {
           "type": "object",
@@ -849,7 +959,7 @@
     },
     "esp": {
       "type": "object",
-      "required": [ "name", "service" ],
+      "required": [ "name", "service", "auth" ],
       "additionalProperties": { "type": ["integer", "string", "boolean"] },
       "properties": {
         "name": {
@@ -879,36 +989,14 @@
           "type": "object",
           "additionalProperties": { "type": "string" }
         },
+        "auth": {
+          "$ref": "#/definitions/auth"
+        },
         "ldap": {
           "$ref": "#/definitions/ldap"
         },
         "service": {
-          "description": "Service properties",
-          "type": "object",
-          "required": [ "servicePort", "visibility" ],
-          "properties": {
-            "port": {
-              "type": "integer",
-              "description": "The local port used by the pod",
-              "default": 8880
-            },
-            "servicePort": {
-              "type": "integer",
-              "description": "The port that this service will be exposed on"
-            },
-            "visibility": {
-              "type": "string",
-              "description": "Should this service be exposed outside the cluster, locally or to the internet"
-            },
-            "annotations": {
-              "type": "object",
-              "additionalProperties": { "type": "string" }
-            },
-            "labels": {
-              "type": "object",
-              "additionalProperties": { "type": "string" }
-            }
-          }
+          "$ref": "#/definitions/service"
         }
       }
     },
@@ -958,6 +1046,9 @@
         },
         "resources": {
           "$ref": "#/definitions/resources"
+        },
+        "jobMemory": {
+          "$ref": "#/definitions/memory"
         }
       }
     },
@@ -1006,8 +1097,8 @@
           "description": "The default storage plane to write data files to",
           "type": "string"
         },
-        "storagePlanes": {
-          "description": "A list of storage planes suitable for storing roxie data",
+        "directAccessPlanes": {
+          "description": "A list of storage planes suitable for roxie to read from directly and not have roxie copy the data to roxie's default plane",
           "type": "array",
           "items": { "type": "string" }
         },
@@ -1087,6 +1178,9 @@
         "labels": {
           "type": "object",
           "additionalProperties": { "type": "string" }
+        },
+        "ingress": {
+          "$ref" : "#/definitions/ingress"
         },
         "visibility": {
           "type": "string",
@@ -1190,6 +1284,15 @@
         "labels": {
           "type": "object",
           "additionalProperties": { "type": "string" }
+        },
+        "eclAgentMemory": {
+          "$ref": "#/definitions/memory"
+        },
+        "workerMemory": {
+          "$ref": "#/definitions/memory"
+        },
+        "managerMemory": {
+          "$ref": "#/definitions/memory"
         },
         "managerResources": {
           "$ref": "#/definitions/resources"
@@ -1509,6 +1612,36 @@
         }
       ]
     },
+    "dafilesrv": {
+      "type": "object",
+      "required": [ "name", "service" ],
+      "additionalProperties": { "type": ["integer", "string", "boolean"] },
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the dafilesrv process"
+        },
+        "service": {
+          "$ref": "#/definitions/service"
+        },
+        "parallelRequestLimit": {
+          "type": "integer",
+          "default": "20"
+        },
+        "replicas": {
+          "type": "integer"
+        },
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "logging": {
+          "$ref": "#/definitions/logging"
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
+        }
+      }
+    },
     "placement": {
       "type": "object",
       "properties": {
@@ -1523,6 +1656,10 @@
         },
         "schedulerName": {
           "type": "string"
+        },
+        "topologySpreadConstraints": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/topologySpreadConstraint" }
         }
       }
     },
@@ -1553,6 +1690,28 @@
         },
         "tolerationSeconds": {
           "type": "integer"
+        }
+      }
+    },
+    "topologySpreadConstraint": {
+      "type": "object",
+      "properties": {
+        "maxSkew": {
+          "type": "integer",
+          "description": "describes the degree to which Pods may be unevenly distributed. It must be greater than zero"
+        },
+        "topologyKey": {
+          "type": "string",
+          "description": "is the key of node labels"
+        },
+        "whenUnsatisfiable": {
+          "type": "string",
+          "enum": ["DoNotSchedule", "ScheduleAnyway"],
+          "description": "indicates how to deal with a Pod if it doesn't satisfy the spread constraint"
+        },
+        "labelSelector": {
+          "type": "object",
+          "description": "labelSelector is used to find matching Pods"
         }
       }
     },
@@ -1612,6 +1771,23 @@
         "type",
         "name"
       ]
+    },
+    "stubInstanceResources": {
+      "type": "object",
+      "description" : "resource definitions per instance for stub components",
+      "properties": {
+        "memory": {
+          "description": "default per stub instance memory requirements",
+          "type": "string",
+          "default": "200Mi"
+        },
+        "cpu": {
+          "description": "default per stub instance milli cpu requirements",
+          "type": "string",
+          "default": "50m"
+        },
+        "additionalProperties": false
+      }
     }
   }
 }
