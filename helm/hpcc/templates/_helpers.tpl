@@ -430,6 +430,7 @@ Add sentinel-based probes for a component
 {{- define "hpcc.addSentinelProbes" -}}
 {{- $minStartupTime := .minStartupTime | default 0 }}
 {{- $maxStartupTime := .maxStartupTime | default 300 }}
+{{- $readyProbeName := .readyProbeName | default "" }}
 {{- $numAttempts := div (sub $maxStartupTime $minStartupTime) 10 }}
 startupProbe:
   exec:
@@ -443,7 +444,7 @@ readinessProbe:
   exec:
     command:
     - cat
-    - "/tmp/{{ .name }}.sentinel"
+    - "/tmp/{{ .name }}.sentinel{{ $readyProbeName }}"
   periodSeconds: 10
 {{ end -}}
 
@@ -945,7 +946,7 @@ kind: Service
 metadata:
   name: {{ $lvars.serviceName | quote }}
   labels:
-    helmVersion: 8.4.6
+    helmVersion: 8.4.8
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}
 {{- end }}
