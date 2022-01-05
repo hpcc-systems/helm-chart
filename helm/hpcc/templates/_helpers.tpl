@@ -962,6 +962,12 @@ spec:
   selector:
     server: {{ .selector | quote }}
   type: {{ $lvars.type }}
+{{- if .service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+  {{- range $cidr := .service.loadBalancerSourceRanges }}
+  - {{ $cidr }}
+  {{- end }}
+{{ end }}
 {{- if $lvars.ingress }} 
 ---
 apiVersion: networking.k8s.io/v1
