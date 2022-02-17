@@ -83,8 +83,9 @@ data:
 {{- else -}}
  {{- $_ := set $commonCtx "externalCert" false -}}
 {{- end -}}
-{{- $generateSigningCert := and (eq $application "eclwatch") (hasKey $.Values.certificates.issuers "signing") -}}
-{{- $signingCertGenerator := or ($generateSigningCert) (has $application (list "eclservices")) | ternary "eclwatch" "" -}}
+{{- $signingEnabled := eq (include "hpcc.isIssuerEnabled" (dict "root" $ "issuer" "signing")) "true" -}}
+{{- $generateSigningCert := and ($signingEnabled) (eq $application "eclwatch") -}}
+{{- $signingCertGenerator := and ($signingEnabled) (has $application (list "eclwatch" "eclservices")) | ternary "eclwatch" "" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -101,7 +102,7 @@ spec:
         server: {{ .name | quote }}
         accessDali: "yes"
         app: {{ $application }}
-        helmVersion: 8.4.28
+        helmVersion: 8.6.2
 {{- if hasKey $.Values.global "metrics" }}
  {{- include "hpcc.generateMetricsReporterLabel" $.Values.global.metrics | nindent 8 }}
 {{- end }}
@@ -119,6 +120,7 @@ spec:
     spec:
       {{- include "hpcc.placementsByPodTargetType" (dict "root" $ "pod" .name "type" "esp") | indent 6 }}
       serviceAccountName: "hpcc-esp-service"
+      {{- include "hpcc.addImagePullSecrets" $commonCtx | nindent 6 -}}
       containers:
       - name: {{ .name | quote }}
         workingDir: /var/lib/HPCCSystems
@@ -164,7 +166,12 @@ kind: ConfigMap
 ---
 {{- if hasKey . "service" -}}
 {{- if .service.servicePort -}}
-{{ include "hpcc.addService" ( dict "root" $ "name" .name "service" .service "selector" .name "defaultPort" 8880 ) }}
+{{- $service := deepCopy .service -}}
+{{- if not (hasKey $service "labels") -}}
+ {{- $_ := set $service "labels" dict -}}
+{{- end -}}
+{{- $_ := set $service "labels" (merge $service.labels (dict "server" $application)) -}}
+{{ include "hpcc.addService" ( dict "root" $ "name" .name "service" $service "selector" .name "defaultPort" 8880 ) }}
 ---
 {{- end }}
 {{- end }}

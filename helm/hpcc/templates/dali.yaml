@@ -63,7 +63,7 @@ spec:
         run: {{ $dali.name | quote }}
         server: {{ $dali.name | quote }}
         app: dali
-        helmVersion: 8.4.28
+        helmVersion: 8.6.2
 {{- if hasKey $.Values.global "metrics" }}
  {{- include "hpcc.generateMetricsReporterLabel" $.Values.global.metrics | nindent 8 }}
 {{- end }}
@@ -84,6 +84,7 @@ spec:
       serviceAccountName: "hpcc-default"
       initContainers: 
       {{- include "hpcc.changePlaneMountPerms" (dict "root" $ "includeCategories" $tmpDaliScope.aggregatePlaneCategories "includeNames" $tmpDaliScope.aggregateSashaNamedPlanes) | indent 6 }}
+      {{- include "hpcc.addImagePullSecrets" $commonCtx | nindent 6 -}}
       containers:
       - name: {{ $dali.name | quote }}
         workingDir: /var/lib/HPCCSystems
@@ -190,7 +191,7 @@ kind: Service
 metadata:
   name: {{ .name | quote }}
   labels:
-    helmVersion: 8.4.28
+    helmVersion: 8.6.2
 spec:
   ports:
   - port: 7070

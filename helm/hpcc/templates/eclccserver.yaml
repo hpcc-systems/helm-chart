@@ -56,7 +56,7 @@ data:
           labels:
             accessDali: "yes"
             accessEsp: "yes"
-            helmVersion: 8.4.28
+            helmVersion: 8.6.2
 {{- if hasKey .me "labels" }}
 {{ toYaml .me.labels | indent 12 }}
 {{- end }}
@@ -69,7 +69,8 @@ data:
           serviceAccountName: "hpcc-default"
 {{- if $misc.postJobCommandViaSidecar }}
           shareProcessNamespace: true
-{{- end }}            
+{{- end }}
+          {{- include "hpcc.addImagePullSecrets" . | nindent 10 -}}
           containers:
 {{- if $misc.postJobCommandViaSidecar }}
 {{ include "hpcc.addWaitAndRunContainer" (. | merge (dict "command" $misc.postJobCommand)) | indent 10 }}
@@ -82,10 +83,8 @@ data:
 {{- $postJobCommand := $misc.postJobCommand | default "" }}
 {{- $eclccserverCmd := printf "eclccserver %s %s _HPCC_ARGS_" (include "hpcc.configArg" .me) (include "hpcc.daliArg" .root) }}
 {{ include "hpcc.addCommandAndLifecycle" (. | merge (dict "command" $eclccserverCmd)) | indent 12 }}
-{{- if .env }}
             env:
 {{ include "hpcc.mergeEnvironments" .env | indent 12 }}
-{{- end }}
             workingDir: /tmp
             volumeMounts:
 {{ include "hpcc.addConfigMapVolumeMount" .me | indent 12 }}
@@ -108,12 +107,27 @@ data:
 {{- end }}
 {{- end -}}
 
+{{- define "hpcc.gatherGitEnvironment" -}}
+{{- $gitPlane := .me.gitPlane | default (include "hpcc.getDefaultGitPlane" .root) -}}
+{{- $result := dict "value" list -}}
+{{- if $gitPlane -}}
+{{- include "hpcc.checkPlaneExists" (dict "root" .root "planeName" $gitPlane) -}}
+{{- $prefix := include "hpcc.getPlanePrefix" (dict "root" .root "planeName" $gitPlane) -}}
+{{- $_ := set $result "value" (list (dict "name" "ECLCC_ECLREPO_PATH" "value" $prefix)) -}}
+{{- end -}}
+{{- if .me.gitUsername -}}
+{{- $entry := list (dict "name" "HPCC_GIT_USERNAME" "value" .me.gitUsername) -}}
+{{- $_ := set $result "value" (concat (get $result "value") $entry) -}}
+{{- end -}}
+{{- toYaml $result -}}
+{{- end -}}
 
 {{ range $.Values.eclccserver -}}
 {{- if not .disabled -}}
-{{- $env := concat ($.Values.global.env | default list) (.env | default list) -}}
-{{- $secretsCategories := list "system" "codeVerify" }}
-{{- $commonCtx := dict "root" $ "me" . "includeCategories" (list "dll") "secretsCategories" $secretsCategories "env" $env }}
+{{- $gitenv := get (fromYaml (include "hpcc.gatherGitEnvironment" (dict "root" $ "me" .))) "value" -}}
+{{- $env := concat ($.Values.global.env | default list) (.env | default list) $gitenv -}}
+{{- $secretsCategories := list "system" "codeVerify" "git" }}
+{{- $commonCtx := dict "root" $ "me" . "includeCategories" (list "dll" "git") "secretsCategories" $secretsCategories "env" $env }}
 {{- $configSHA := include "hpcc.getConfigSHA" ($commonCtx | merge (dict "configMapHelper" "hpcc.eclccServerConfigMap" "component" "eclccserver" "excludeKeys" "global,eclccserver.queues")) }}
 apiVersion: apps/v1
 kind: Deployment
@@ -130,7 +144,7 @@ spec:
         run: {{ .name | quote }}
         accessDali: "yes"
         accessEsp: {{ .useChildProcesses | default false | ternary "yes" "no" | quote }}
-        helmVersion: 8.4.28
+        helmVersion: 8.6.2
 {{- if hasKey . "labels" }}
 {{ toYaml .labels | indent 8 }}
 {{- end }}
@@ -146,6 +160,7 @@ spec:
       initContainers:
       {{- include "hpcc.changePlaneMountPerms" $commonCtx | indent 6 }}
       {{- include "hpcc.addBundles" $commonCtx | nindent 6 }}
+      {{- include "hpcc.addImagePullSecrets" $commonCtx | nindent 6 -}}
       containers:
       - name: {{ .name | quote }}
         workingDir: /tmp

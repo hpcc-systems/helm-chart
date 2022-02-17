@@ -79,7 +79,7 @@ data:
           labels:
             accessDali: "yes"
             accessEsp: "yes"
-            helmVersion: 8.4.28
+            helmVersion: 8.6.2
 {{- if hasKey .me "labels" }}
 {{ toYaml .me.labels | indent 12 }}
 {{- end }}
@@ -92,6 +92,7 @@ data:
           serviceAccountName: "hpcc-agent"
           initContainers: 
           {{- include "hpcc.changePlaneMountPerms" . | indent 10 }}
+          {{- include "hpcc.addImagePullSecrets" . | nindent 10 -}}
 {{- if $misc.postJobCommandViaSidecar }}
           shareProcessNamespace: true
 {{- end }}            
@@ -144,7 +145,7 @@ data:
             accessDali: "yes"
             accessEsp: "yes"
             job: "_HPCC_JOBNAME_"
-            helmVersion: 8.4.28
+            helmVersion: 8.6.2
 {{- if hasKey $thorScope "labels" }}
 {{ toYaml $thorScope.labels | indent 12 }}
 {{- end }}
@@ -157,6 +158,7 @@ data:
           serviceAccountName: hpcc-agent
           initContainers:
           {{- include "hpcc.changePlaneMountPerms" . | indent 10 }}
+          {{- include "hpcc.addImagePullSecrets" . | nindent 10 -}}
 {{- if $misc.postJobCommandViaSidecar }}
           shareProcessNamespace: true
 {{- end }}            
@@ -208,7 +210,7 @@ data:
             app: thor
             accessEsp: "true"
             job: "_HPCC_JOBNAME_"
-            helmVersion: 8.4.28
+            helmVersion: 8.6.2
 {{- if hasKey $thorScope "labels" }}
 {{ toYaml $thorScope.labels | indent 12 }}
 {{- end }}
@@ -222,6 +224,7 @@ data:
 {{- if $misc.postJobCommandViaSidecar }}
           shareProcessNamespace: true
 {{- end }}            
+          {{- include "hpcc.addImagePullSecrets" . | nindent 10 -}}
           containers:
 {{- if $misc.postJobCommandViaSidecar }}
 {{ include "hpcc.addWaitAndRunContainer" (. | merge (dict "command" $misc.postJobCommand)) | indent 10 }}
@@ -285,7 +288,7 @@ data:
 {{- if not .disabled -}}
 {{- $env := concat ($.Values.global.env | default list) (.env | default list) -}}
 {{- $secretsCategories := list "system" "ecl-user" "ecl" "storage" }}
-{{- $commonCtx := dict "root" $ "me" . "includeCategories" (list "lz" "data" "spill" "dll") "secretsCategories" $secretsCategories "env" $env -}}
+{{- $commonCtx := dict "root" $ "me" . "includeCategories" (list "lz" "data" "remote" "spill" "dll") "secretsCategories" $secretsCategories "env" $env -}}
 {{- $_ := set $commonCtx "eclAgentName" (printf "%s-eclagent" .name) -}}
 {{- $_ := set $commonCtx "thorAgentName" (printf "%s-thoragent" .name) -}}
 {{- $_ := set $commonCtx "eclAgentUseChildProcesses" (hasKey . "eclAgentUseChildProcesses" | ternary .eclAgentUseChildProcesses true) }}
@@ -308,7 +311,7 @@ spec:
         run: {{ $commonCtx.eclAgentName | quote }}
         accessDali: "yes"
         accessEsp: {{ $commonCtx.eclAgentUseChildProcesses | ternary "yes" "no" | quote }}
-        helmVersion: 8.4.28
+        helmVersion: 8.6.2
 {{- if hasKey $commonCtx.me "labels" }}
 {{ toYaml $commonCtx.me.labels | indent 8 }}
 {{- end }}
@@ -319,6 +322,7 @@ spec:
 {{- end }}
     spec:
       {{- include "hpcc.placementsByPodTargetType" (dict "root" $ "pod" $commonCtx.eclAgentName "target" .name "type" "thor") | indent 6 }}
+      {{- include "hpcc.addImagePullSecrets" $commonCtx | nindent 6 -}}
       serviceAccountName: {{ $commonCtx.eclAgentUseChildProcesses | ternary "hpcc-default" "hpcc-agent" }}
       containers:
       - name: {{ $commonCtx.eclAgentName | quote }}
@@ -366,7 +370,7 @@ spec:
         run: {{ $commonCtx.thorAgentName | quote }}
         accessDali: "yes"
         accessEsp: "no"
-        helmVersion: 8.4.28
+        helmVersion: 8.6.2
 {{- if hasKey $commonCtx.me "labels" }}
 {{ toYaml $commonCtx.me.labels | indent 8 }}
 {{- end }}
@@ -377,6 +381,7 @@ spec:
 {{- end }}
     spec:
       {{- include "hpcc.placementsByPodTargetType" (dict "root" $ "pod" $commonCtx.thorAgentName "target" .name "type" "thor") | indent 6 }}
+      {{- include "hpcc.addImagePullSecrets" $commonCtx | nindent 6 -}}
       serviceAccountName: "hpcc-thoragent"
       containers:
       - name: {{ $commonCtx.thorAgentName | quote }}

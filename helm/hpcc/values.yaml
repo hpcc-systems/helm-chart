@@ -10,6 +10,13 @@ global:
     ## version: x.y.z
     root: "hpccsystems"    # change this if you want to pull your images from somewhere other than DockerHub hpccsystems
     pullPolicy: IfNotPresent
+    ## If you need to provide credentials to pull your image, they should be added as a k8s secret, and the secret name provided here
+    # imagePullSecrets: xxx
+
+  ## It is possible (but not recommended) to change the uid/gid that the HPCC containers run under
+  ## user:
+  ##  uid: 10000
+  ##  gid: 10001
 
   # logging sets the default logging information for all components. Can be overridden locally
   logging:
@@ -80,7 +87,7 @@ global:
       type: LoadBalancer
       # If ingress is specified, an ingress Network Policy will be created for any pod implementing a service with this visibility
       # Default allows ingress from anywhere, but more restrictive rules can be used if preferred.
-      # Ingress rules can also be overriden by individual services
+      # Ingress rules can also be overridden by individual services
       ingress:
       - {}
     global:
@@ -89,6 +96,8 @@ global:
       type: LoadBalancer
       ingress:
       - {}
+      ## CIDRS allowed to access this service.
+      #loadBalancerSourceRanges: [1.2.3.4/32, 5.6.7.8/32]
       
       
 # For pod placement instruction and examples please reference docs/placements.md
@@ -273,6 +282,9 @@ secrets:
   system: {}
     ## Category for secrets published to all components for system level useage
 
+  git: {}
+    ## Category to provide passwords for eclccserver to access private git repos
+
 ## The vaults section mirrors the secret section but leverages vault for the storage of secrets.
 ## There is an additional category for vaults named "ecl-user".  In the future "ecl-user" vault
 ## secrets will be readable directly from ECL code.  Other secret categories are read internally
@@ -428,6 +440,9 @@ eclccserver:
   replicas: 1
   ## Set to false if you want to launch each workunit compile in its own container, true to run as child processes in eclccserver pod.
   useChildProcesses: false
+  ## If non-zero, and useChildProcesses is false, try spending up to this number of seconds compiling using a child process before switching to 
+  ## a separate container. Speeds up throughput of small jobs.
+  childProcessTimeLimit: 10
   ## maxActive controls how many workunit compiles may be active at once (per replica)
   maxActive: 4
   ## Specify a list of queues to listen on if you don't want this eclccserver listening on all queues. If empty or missing, listens on all queues
@@ -437,6 +452,9 @@ eclccserver:
   #- name: globalAutoHoist
   #  value: false
   #  cluster: name   # optional cluster this is applied to
+
+  # used to configure the authentication for git when using the option to compile from a repo.  Also requires an associated secret.
+  #gitUsername: <git-service-account>
 
   ## The following resources apply to child compile pods when useChildProcesses=false, otherwise they apply to eclccserver pod.
   #resources:
@@ -473,6 +491,8 @@ esp:
     #- name: linkname
     #  description: "some description"
     #  url: "http://abc.com/def?g=1"
+    ## CIDRS allowed to access this service.
+    #loadBalancerSourceRanges: [1.2.3.4/32, 5.6.7.8/32]
   #resources:
   #  cpu: "1"
   #  memory: "2G"

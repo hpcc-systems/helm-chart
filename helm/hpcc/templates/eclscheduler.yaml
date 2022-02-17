@@ -64,7 +64,7 @@ spec:
         run: {{ .name | quote }}
         accessDali: "yes"
         accessEsp: "no"
-        helmVersion: 8.4.28
+        helmVersion: 8.6.2
 {{- if hasKey . "labels" }}
 {{ toYaml .labels | indent 8 }}
 {{- end }}
@@ -79,6 +79,7 @@ spec:
       terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds | default 600 }}
       initContainers:
       {{- include "hpcc.changePlaneMountPerms" $commonCtx | indent 6 }}
+      {{- include "hpcc.addImagePullSecrets" $commonCtx | nindent 6 -}}
       containers:
       - name: {{ .name | quote }}
         workingDir: /var/lib/HPCCSystems

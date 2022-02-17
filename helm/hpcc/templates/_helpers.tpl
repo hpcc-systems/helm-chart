@@ -129,6 +129,13 @@ Get default dll plane
 {{- end -}}
 
 {{/*
+Get default git plane
+*/}}
+{{- define "hpcc.getDefaultGitPlane" -}}
+{{- include "hpcc.getFirstPlaneForCategory" (dict "root" $ "category" "git") | default (include "hpcc.getFirstPlaneForCategory" (dict "root" $ "category" "dll")) -}}
+{{- end -}}
+
+{{/*
 Returns the largest number of workers from all the thors
 */}}
 {{- define "hpcc.getMaxNumWorkers" -}}
@@ -194,6 +201,10 @@ storage:
 {{- if hasKey $storage "hostGroups" }}
   hostGroups:
 {{ toYaml $storage.hostGroups | indent 2 }}
+{{- end }}
+{{- if hasKey $storage "remote" }}
+  remote:
+{{ toYaml $storage.remote | indent 2 }}
 {{- end }}
   dataPlane: {{ include "hpcc.getDefaultDataPlane" . }}
   planes:
@@ -354,7 +365,26 @@ The plane will generate a volume if it matches either an includeLabel or an incl
 {{- end -}}
 
 {{/*
-Add a volume mount - if default plane is used, or the storage plane specifies a pvc
+Check that the data plane name is valid, and report an error if not
+Pass in dict with root, planeName
+*/}}
+{{- define "hpcc.checkPlaneExists" -}}
+{{- $storage := (.root.Values.storage | default dict) -}}
+{{- $planes := ($storage.planes | default list) -}}
+{{- $name := .planeName -}}
+{{- $matched := dict -}}
+{{- range $plane := $planes -}}
+ {{- if (eq $plane.name $name) -}}
+  {{- $_ := set $matched "ok" true -}}
+ {{- end -}}
+{{- end -}}
+{{- if not $matched.ok -}}
+ {{- $_ := fail (printf "Storage plane %s does not exist" $name) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the path associated with a data plane.
 Pass in dict with root, planeName
 */}}
 {{- define "hpcc.getPlanePrefix" -}}
@@ -363,7 +393,11 @@ Pass in dict with root, planeName
 {{- $name := .planeName -}}
 {{- range $plane := $planes -}}
  {{- if (eq $plane.name $name) -}}
-  {{- $plane.prefix -}}
+  {{- if $plane.subPath -}}
+   {{- printf "%s/%s" $plane.prefix $plane.subPath | quote -}}
+  {{- else -}}
+   {{- $plane.prefix | quote -}}
+  {{- end -}}
  {{- end -}}
 {{- end -}}
 {{- end -}}
@@ -546,6 +580,23 @@ imagePullPolicy: {{ .root.Values.global.image.pullPolicy | default "IfNotPresent
 {{- end -}}
 
 {{/*
+Add image pull credentials for a component 
+Pass in a dictionary with root and me defined
+*/}}
+{{- define "hpcc.addImagePullSecrets" -}}
+{{- $secret := dict -}}
+{{- if .me.image -}}
+{{- $_ := set $secret "imagePullSecrets" (.me.image.imagePullSecrets | default .root.Values.global.image.imagePullSecrets) -}}
+{{- else -}}
+{{- $_ := set $secret "imagePullSecrets" .root.Values.global.image.imagePullSecrets -}}
+{{- end -}}
+{{- if $secret.imagePullSecrets -}}
+imagePullSecrets:
+- name: {{ $secret.imagePullSecrets }}
+{{ end -}}
+{{- end -}}
+
+{{/*
 A kludge to ensure mounted storage (e.g. for nfs, minikube or docker for desktop) has correct permissions for PV
 */}}
 {{- define "hpcc.changeMountPerms" -}}
@@ -553,8 +604,7 @@ A kludge to ensure mounted storage (e.g. for nfs, minikube or docker for desktop
 # This is only required when mounting a remote filing systems from another container or machine.
 # NB: this includes where the filing system is on the containers host machine .
 # Examples include, minikube, docker for desktop, or NFS mounted storage.
-# NB: uid=10000 and gid=10001 are the uid/gid of the hpcc user, built into platform-core
-{{- $permCmd := printf "chown -R 10000:10001 %s" .volumePath }}
+{{- $permCmd := printf "chown -R %v:%v %s" .uid .gid .volumePath }}
 - name: volume-mount-hack
   image: busybox
   command: [
@@ -570,8 +620,12 @@ A kludge to ensure mounted storage (e.g. for nfs, minikube or docker for desktop
 
 {{/*
 A kludge to ensure mounted storage (e.g. for nfs, minikube or docker for desktop) has correct permissions for PV
+NB: uid=10000 and gid=10001 are the uid/gid of the hpcc user, built into platform-core
 */}}
 {{- define "hpcc.changePlaneMountPerms" -}}
+{{- $user := (.root.Values.global.user | default dict) -}}
+{{- $uid := $user.uid | default 10000 -}}
+{{- $gid := $user.gid | default 10001 -}}
 {{- $storage := (.root.Values.storage | default dict) -}}
 {{- $planes := ($storage.planes | default list) -}}
 {{- $includeCategories := .includeCategories | default list -}}
@@ -581,12 +635,11 @@ A kludge to ensure mounted storage (e.g. for nfs, minikube or docker for desktop
   {{- $mountpath := $plane.prefix -}}
   {{- if or (has $plane.category $includeCategories) (has $plane.name $includeNames) -}}
    {{- $volumeName := (printf "%s-pv" $plane.name) -}}
-   {{- include "hpcc.changeMountPerms" (dict "root" .root "volumeName" $volumeName "volumePath" $plane.prefix) | nindent 0 }}
+   {{- include "hpcc.changeMountPerms" (dict "root" .root "uid" $uid "gid" $gid "volumeName" $volumeName "volumePath" $plane.prefix) | nindent 0 }}
   {{- end -}}
  {{- end -}}
 {{- end -}}
 {{- end -}}
-
 
 {{/*
 Container to watch for a file on a shared mount and execute a command
@@ -659,6 +712,7 @@ Add security context
 Pass in a dictionary with root and me defined
 */}}
 {{- define "hpcc.addSecurityContext" }}
+{{- $user := (.root.Values.global.user | default dict) }}
 securityContext:
 {{- if .root.Values.global.privileged }}
   privileged: true
@@ -674,8 +728,8 @@ securityContext:
   readOnlyRootFilesystem: true
 {{- end }}
   runAsNonRoot: true
-  runAsUser: 10000
-  runAsGroup: 10001
+  runAsUser: {{ $user.uid | default 10000 }}
+  runAsGroup: {{ $user.gid | default 10001 }}
 {{ end -}}
 
 {{/*
@@ -712,6 +766,40 @@ Generate instance queue names
 {{- end -}}
 
 {{/*
+Generate service entries for TLS
+*/}}
+{{- define "hpcc.addTLSServiceEntries" -}}
+  {{- $externalService := (ne ( include "hpcc.isVisibilityPublic" (dict "root" .root "visibility" .visibility)) "") }}
+  public: {{ $externalService | ternary "true" "false" }}
+  {{- if (hasKey .service "tls") }}
+  tls: {{ .service.tls }}
+  {{- else -}}
+    {{- if and ($externalService) (hasKey .component "certificate") }}
+  tls: true
+    {{- else }}
+      {{- $issuerName := ternary "public" "local" $externalService }}
+      {{- $certificates := (.root.Values.certificates | default dict) -}}
+      {{- if not $certificates.enabled }}
+  tls: false
+      {{- else -}}
+        {{- $issuers := ($certificates.issuers | default dict) -}}
+        {{- $issuer := get $issuers $issuerName -}}
+        {{- if not $issuer }}
+  tls: false
+        {{- else -}}
+          {{- $issuerSpec := ($issuer.spec | default dict) }}
+  tls: {{ (hasKey $issuer "enabled" | ternary $issuer.enabled true) }}
+  issuer: {{ $issuerName }}
+  selfSigned: {{ (hasKey $issuerSpec "selfSigned") }}
+  caCert: {{ (or (hasKey $issuerSpec "ca") (hasKey $issuerSpec "vault")) }}
+        {{- end -}}
+      {{- end -}}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+
+{{/*
 Generate list of available services
 */}}
 {{- define "hpcc.generateConfigMapServices" -}}
@@ -724,22 +812,17 @@ Generate list of available services
   type: roxie
   port: {{ $service.servicePort }}
   target: {{ $roxie.name }}
-  public: {{ (ne ( include "hpcc.isVisibilityPublic" (dict "root" $ "visibility" $service.visibility)) "") | ternary "true" "false" }}
-   {{- end -}}
-  {{- end }}
+  {{- include "hpcc.addTLSServiceEntries" (dict "root" $ "service" $service "component" $roxie "visibility" $service.visibility) }}
 {{ end -}}
+  {{- end }}
+ {{- end -}}
 {{- end -}}
 {{- range $esp := $.Values.esp -}}
 - name: {{ $esp.name }}
   class: esp
   type: {{ $esp.application }}
   port: {{ $esp.service.servicePort }}
-  {{- if hasKey $esp "tls" }}
-  tls: {{ $esp.tls }}
-  {{- else }}
-  tls: {{ ($.Values.certificates | default dict).enabled }}
-  {{- end }}
-  public: {{ (ne ( include "hpcc.isVisibilityPublic" (dict "root" $ "visibility" $esp.service.visibility))  "") | ternary "true" "false" }}
+  {{- include "hpcc.addTLSServiceEntries" (dict "root" $ "service" $esp "component" $esp "visibility" $esp.service.visibility) }}
 {{ end -}}
 {{- range $dali := $.Values.dali -}}
 {{- $sashaServices := $dali.services | default dict -}}
@@ -931,6 +1014,7 @@ Pass in dict with .root, .name, .service, .defaultPort, .selector defined
     {{- if hasKey $globalServiceInfo "labels" -}}{{- $_ := set $lvars "labels" (merge $lvars.labels $globalServiceInfo.labels) -}}{{- end -}}
     {{- if hasKey $globalServiceInfo "annotations" -}}{{- $_ := set $lvars "annotations" (merge $lvars.annotations $globalServiceInfo.annotations) -}}{{- end -}}
     {{- if hasKey $globalServiceInfo "ingress" -}}{{- $_ := set $lvars "ingress" $globalServiceInfo.ingress -}}{{- end -}}
+    {{- if hasKey $globalServiceInfo "loadBalancerSourceRanges" -}}{{- $_ := set $lvars "loadBalancerSourceRanges" $globalServiceInfo.loadBalancerSourceRanges -}}{{- end -}}
     {{- $_ := set $lvars "type" $globalServiceInfo.type -}}
    {{- else -}}
     {{- required (printf "Specified service visibility %s not found in global visibilities section" .service.visibility) nil -}}
@@ -940,13 +1024,14 @@ Pass in dict with .root, .name, .service, .defaultPort, .selector defined
   {{- end -}}
  {{- end -}}
  {{- if hasKey .service "ingress" -}}{{- $_ := set $lvars "ingress" .service.ingress -}}{{- end -}}
+ {{- if hasKey .service "loadBalancerSourceRanges" -}}{{- $_ := set $lvars "loadBalancerSourceRanges" .service.loadBalancerSourceRanges -}}{{- end -}}
 {{- end }}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ $lvars.serviceName | quote }}
   labels:
-    helmVersion: 8.4.28
+    helmVersion: 8.6.2
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}
 {{- end }}
@@ -962,6 +1047,15 @@ spec:
   selector:
     server: {{ .selector | quote }}
   type: {{ $lvars.type }}
+{{- if $lvars.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+  {{- if ne $lvars.type "LoadBalancer" -}}
+   {{- $_ := fail (printf "loadBalanceSourceRanges invalid unless service type is LoadBalancer" ) -}}
+  {{- end -}} 
+  {{- range $cidr := $lvars.loadBalancerSourceRanges }}
+  - {{ $cidr }}
+  {{- end }}
+{{ end }}
 {{- if $lvars.ingress }} 
 ---
 apiVersion: networking.k8s.io/v1
@@ -1303,7 +1397,7 @@ use "public" or "local"
 {{- $externalCert := or (and (hasKey . "external") .external) (ne (include "hpcc.isVisibilityPublic" .) "") -}}
 {{- $issuerName := .issuer | default (ternary "public" "local" $externalCert) -}}
 {{- /*
-    A .certificate parameter means the user explictly configured a certificate to use
+    A .certificate parameter means the user explicitly configured a certificate to use
     otherwise check if certificate generation is enabled
 */ -}}
 {{- if .certificate -}}
@@ -1326,7 +1420,7 @@ use "public" or "local"
 {{- $externalCert := or (and (hasKey . "external") .external) (ne (include "hpcc.isVisibilityPublic" .) "") -}}
 {{- $issuerName := .issuer | default (ternary "public" "local" $externalCert) -}}
 {{- /*
-    A .certificate parameter means the user explictly configured a certificate to use
+    A .certificate parameter means the user explicitly configured a certificate to use
     otherwise check if certificate generation is enabled
 */ -}}
 {{- if .certificate -}}
@@ -1343,7 +1437,7 @@ use "public" or "local"
 {{- end -}}
 
 {{/*
-Add the certficate volume mount for a roxie udp key
+Add the certificate volume mount for a roxie udp key
 */}}
 {{- define "hpcc.addUDPCertificateVolumeMount" }}
 {{- if (.root.Values.certificates | default dict).enabled -}}
@@ -1452,14 +1546,14 @@ globalExcludeList below is a hard-coded list of global keys to exclude.
 
 {{/*
 A template to ensure that the flag specifying whether kubernetes resource validation is allowed exists.  When running helm
-in template mode access to functions like "lookup" that need to access the kubernetes API are diabled.  We use that function
-to validate things like the existance of secrets we have dependencies on.  We also check the Capabilities.APIVersions for the
+in template mode access to functions like "lookup" that need to access the kubernetes API are disabled.  We use that function
+to validate things like the existence of secrets we have dependencies on.  We also check the Capabilities.APIVersions for the
 existence of custom CRDS which are not updated when kubernetes API access is not allowed.
 
 By default the behavior should now be correct for both install and template.
 
 Setting the default requires an extra call to lookup.  To avoid a call to "lookup" every time we cache the value in
-global.noResourceValidation flag.  This behavior can be overriden by the caller using "--set global.noResourceValidation=true"
+global.noResourceValidation flag.  This behavior can be overridden by the caller using "--set global.noResourceValidation=true"
 */}}
 {{- define "hpcc.ensureNoResourceValidationFlag" }}
   {{- if not (hasKey .root.Values.global "noResourceValidation" )}}
@@ -1502,7 +1596,7 @@ Pass in value
  {{- else if hasSuffix "Ei" . -}}
   {{- $_ := set $ctx "scale" 1152921504606846976 -}}
  {{- else -}}
-  {{- $_ := fail (printf "Invalid size suffix on memory resoure specification: %s" .) -}}
+  {{- $_ := fail (printf "Invalid size suffix on memory resource specification: %s" .) -}}
  {{- end -}}
  {{- $_ := set $ctx "number" (substr 0 (int (sub (len .) 2)) .) -}}
 {{- else -}}
@@ -1519,7 +1613,7 @@ Pass in value
  {{- else if hasSuffix "E" . -}}
   {{- $_ := set $ctx "scale" 1000000000000000000 -}}
  {{- else -}}
-  {{- $_ := fail (printf "Invalid size suffix on memory resoure specification: %s" .) -}}
+  {{- $_ := fail (printf "Invalid size suffix on memory resource specification: %s" .) -}}
  {{- end -}}
  {{- $_ := set $ctx "number" (substr 0 (sub (len .) 1) .) -}}
 {{- end -}}
