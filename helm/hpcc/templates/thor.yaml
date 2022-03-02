@@ -39,6 +39,8 @@ Pass in dict with root and me
 {{- $thorManagerJobName := printf "thormanager-_HPCC_JOBNAME_" }}
 {{- $thorWorkerJobName := printf "thorworker-_HPCC_JOBNAME_" }}
 {{- $thorNetworkPolicyName := printf "thornetworkpolicy-_HPCC_JOBNAME_" }}
+{{- $numWorkersPerPod := .me.numWorkersPerPod | default 1 }}
+{{- $configCtx := . -}}
 apiVersion: v1 
 metadata:
   name: {{ $thorScope.name }}-configmap
@@ -79,7 +81,7 @@ data:
           labels:
             accessDali: "yes"
             accessEsp: "yes"
-            helmVersion: 8.6.2
+            helmVersion: 8.6.6
 {{- if hasKey .me "labels" }}
 {{ toYaml .me.labels | indent 12 }}
 {{- end }}
@@ -145,7 +147,7 @@ data:
             accessDali: "yes"
             accessEsp: "yes"
             job: "_HPCC_JOBNAME_"
-            helmVersion: 8.6.2
+            helmVersion: 8.6.6
 {{- if hasKey $thorScope "labels" }}
 {{ toYaml $thorScope.labels | indent 12 }}
 {{- end }}
@@ -210,7 +212,7 @@ data:
             app: thor
             accessEsp: "true"
             job: "_HPCC_JOBNAME_"
-            helmVersion: 8.6.2
+            helmVersion: 8.6.6
 {{- if hasKey $thorScope "labels" }}
 {{ toYaml $thorScope.labels | indent 12 }}
 {{- end }}
@@ -226,28 +228,31 @@ data:
 {{- end }}            
           {{- include "hpcc.addImagePullSecrets" . | nindent 10 -}}
           containers:
-{{- if $misc.postJobCommandViaSidecar }}
-{{ include "hpcc.addWaitAndRunContainer" (. | merge (dict "command" $misc.postJobCommand)) | indent 10 }}
+{{- range $containerNum := untilStep 1 (int (add1 $numWorkersPerPod)) 1 }}
+{{- $slavePort := add 20100 (mul 100 (sub $containerNum 1)) -}}
+{{- if and ($misc.postJobCommandViaSidecar) (eq $containerNum 1) }}
+{{ include "hpcc.addWaitAndRunContainer" ($configCtx | merge (dict "command" $misc.postJobCommand)) | indent 10 }}
 {{- end }}
-          - name: {{ $thorWorkerJobName }}
-{{- include "hpcc.addSecurityContext" . | indent 12 }}
-{{ include "hpcc.addImageAttrs" . | indent 12 }}
+          - name: {{ $thorWorkerJobName }}-{{ $containerNum }}
+{{- include "hpcc.addSecurityContext" $configCtx | indent 12 }}
+{{ include "hpcc.addImageAttrs" $configCtx | indent 12 }}
 {{- include "hpcc.addResources" (dict "me" $thorScope.workerResources) | indent 12 }}
-{{- $thorWorkerCmd := printf "thorslave_lcr %s %s _HPCC_ARGS_" (include "hpcc.configArg" .me) (include "hpcc.daliArg" .root) }}
-{{ include "hpcc.addCommandAndLifecycle" (. | merge (dict "command" $thorWorkerCmd)) | indent 12 }}
-{{- if .env }}
+{{- $thorWorkerCmd := printf "thorslave_lcr %s %s _HPCC_ARGS_ --slaveport=%d" (include "hpcc.configArg" $configCtx.me) (include "hpcc.daliArg" $configCtx.root) $slavePort }}
+{{ include "hpcc.addCommandAndLifecycle" ($configCtx | merge (dict "command" $thorWorkerCmd)) | indent 12 }}
+{{- if $configCtx.me.env }}
             env:
-{{ include "hpcc.mergeEnvironments" .env | indent 12 }}
+{{ include "hpcc.mergeEnvironments" $configCtx.me.env | indent 12 }}
 {{- end }}
             workingDir: /var/lib/HPCCSystems
             volumeMounts:
-{{ include "hpcc.addConfigMapVolumeMount" .me | indent 12 }}
-{{ include "hpcc.addVolumeMounts" . | indent 12 }}
-{{ include "hpcc.addSecretVolumeMounts" . | indent 12 }}
-{{ include "hpcc.addCertificateVolumeMount" (dict "root" .root "name" .me.name "component" "thorworker") | indent 12 }}
-{{- if $misc.postJobCommandViaSidecar }}
-{{ include "hpcc.addWaitAndRunVolumeMount" . | indent 12 }}
+{{ include "hpcc.addConfigMapVolumeMount" $configCtx.me | indent 12 }}
+{{ include "hpcc.addVolumeMounts" $configCtx | indent 12 }}
+{{ include "hpcc.addSecretVolumeMounts" $configCtx | indent 12 }}
+{{ include "hpcc.addCertificateVolumeMount" (dict "root" $configCtx.root "name" $configCtx.me.name "component" "thorworker") | indent 12 }}
+{{- if and ($misc.postJobCommandViaSidecar) (eq $containerNum 1) }}
+{{ include "hpcc.addWaitAndRunVolumeMount" $configCtx | indent 12 }}
 {{- end }}
+{{- end }}{{/* range */}}
           volumes:
 {{ include "hpcc.addConfigMapVolume" .me | indent 10 }}
 {{ include "hpcc.addVolumes" . | indent 10 }}
@@ -288,7 +293,7 @@ data:
 {{- if not .disabled -}}
 {{- $env := concat ($.Values.global.env | default list) (.env | default list) -}}
 {{- $secretsCategories := list "system" "ecl-user" "ecl" "storage" }}
-{{- $commonCtx := dict "root" $ "me" . "includeCategories" (list "lz" "data" "remote" "spill" "dll") "secretsCategories" $secretsCategories "env" $env -}}
+{{- $commonCtx := dict "root" $ "me" . "includeCategories" (list "lz" "data" "remote" "spill" "dll" "debug") "secretsCategories" $secretsCategories "env" $env -}}
 {{- $_ := set $commonCtx "eclAgentName" (printf "%s-eclagent" .name) -}}
 {{- $_ := set $commonCtx "thorAgentName" (printf "%s-thoragent" .name) -}}
 {{- $_ := set $commonCtx "eclAgentUseChildProcesses" (hasKey . "eclAgentUseChildProcesses" | ternary .eclAgentUseChildProcesses true) }}
@@ -311,7 +316,7 @@ spec:
         run: {{ $commonCtx.eclAgentName | quote }}
         accessDali: "yes"
         accessEsp: {{ $commonCtx.eclAgentUseChildProcesses | ternary "yes" "no" | quote }}
-        helmVersion: 8.6.2
+        helmVersion: 8.6.6
 {{- if hasKey $commonCtx.me "labels" }}
 {{ toYaml $commonCtx.me.labels | indent 8 }}
 {{- end }}
@@ -327,8 +332,8 @@ spec:
       containers:
       - name: {{ $commonCtx.eclAgentName | quote }}
         workingDir: /var/lib/HPCCSystems
-        command: [ agentexec ]
-        args: [
+        command: [ {{ include "hpcc.componentCommand" (dict "me" . "root" $ "process" "agentexec") }} ] 
+        args: [ {{- include "hpcc.componentStartArgs" (dict "me" . "root" $ "process" "agentexec") | nindent 16 }}
                 {{ include "hpcc.configArg" . }},
                 {{ include "hpcc.daliArg" $ }},
                 {{ printf "\"--name=%s\"" .name }}
@@ -370,7 +375,7 @@ spec:
         run: {{ $commonCtx.thorAgentName | quote }}
         accessDali: "yes"
         accessEsp: "no"
-        helmVersion: 8.6.2
+        helmVersion: 8.6.6
 {{- if hasKey $commonCtx.me "labels" }}
 {{ toYaml $commonCtx.me.labels | indent 8 }}
 {{- end }}
@@ -386,8 +391,8 @@ spec:
       containers:
       - name: {{ $commonCtx.thorAgentName | quote }}
         workingDir: /var/lib/HPCCSystems
-        command: [ agentexec ]
-        args: [
+        command: [ {{ include "hpcc.componentCommand" (dict "me" . "root" $ "process" "agentexec") }} ] 
+        args: [ {{- include "hpcc.componentStartArgs" (dict "me" . "root" $ "process" "agentexec") | nindent 16 }}
                 {{ include "hpcc.configArg" . }},
                 {{ "\"--componentTag=thoragent\"" }},
                 {{ include "hpcc.daliArg" $ }},

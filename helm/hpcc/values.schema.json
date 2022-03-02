@@ -274,7 +274,7 @@
           "type": "string"
         },
         "cost": {
-          "description": "resource cost",
+          "description": "default resource cost",
           "type": "object",
           "properties": {
             "currencyCode": {
@@ -449,6 +449,10 @@
           "description": "the name of the storage plane",
           "type": "string"
         },
+        "disabled": {
+          "description": "disable this plane definition",
+          "type": "boolean"
+        },
         "prefix": {
           "description": "either the path for a local mount, or the url prefix",
           "type": "string"
@@ -490,7 +494,7 @@
         "category": {
           "description": "the category this plane is usd for, e.g. lz, data",
           "type": "string",
-          "enum": ["data", "lz", "dali", "sasha", "dll", "spill", "temp", "git", "remote" ]
+          "enum": ["data", "lz", "dali", "sasha", "dll", "spill", "temp", "git", "remote", "debug" ]
         },
         "umask" : {
           "description": "file creation mask (used by despray)",
@@ -571,6 +575,16 @@
     },
     "resources": {
       "type": "object"
+    },
+    "componentCost": {
+      "description": "component level costs",
+      "type": "object",
+      "properties": {
+        "perCpu": {
+          "description": "cost of a single cpu",
+          "type": "number"
+        }
+      }
     },
     "memory": {
       "type": "object",
@@ -883,6 +897,10 @@
       "type": "object",
       "required": [ "servicePort", "visibility" ],
       "properties": {
+        "application": {
+          "type": "string",
+          "description": "Application name"
+        },
         "port": {
           "type": "integer",
           "description": "The local port used by the pod",
@@ -959,6 +977,9 @@
           "description": "sasha services",
           "type": "object",
           "$ref": "#/definitions/sashaservice"
+        },
+        "service": {
+          "$ref": "#/definitions/service"
         }
       }
     },
@@ -1024,6 +1045,9 @@
         },
         "resources": {
           "$ref": "#/definitions/resources"
+        },
+        "cost": {
+          "$ref" : "#/definitions/componentCost"
         }
       }
     },
@@ -1161,6 +1185,9 @@
         },
         "jobMemory": {
           "$ref": "#/definitions/memory"
+        },
+        "cost": {
+          "$ref" : "#/definitions/componentCost"
         }
       }
     },
@@ -1916,6 +1943,12 @@
           "description": "The number of worker pods",
           "minimum": 1
         },
+        "numWorkersPerPod": {
+          "type": "integer",
+          "description": "The number of workers to place per pod (must be a factor of numWorkers)",
+          "minimum": 1,
+          "default": 1
+        },
         "maxJobs": {
           "type": "integer",
           "description": "The maximum number of jobs that can be run concurrenly",
@@ -1999,6 +2032,9 @@
         },
         "eclAgentResources": {
           "$ref": "#/definitions/resources"
+        },
+        "cost": {
+          "$ref" : "#/definitions/componentCost"
         },
         "expert": {
           "description": "Custom internal options usually reserved for internal testing",

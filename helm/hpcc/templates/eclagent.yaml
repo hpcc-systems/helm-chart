@@ -57,7 +57,7 @@ data:
           labels:
             accessDali: "yes"
             accessEsp: "yes"
-            helmVersion: 8.6.2
+            helmVersion: 8.6.6
 {{- if hasKey .me "labels" }}
 {{ toYaml .me.labels | indent 12 }}
 {{- end }}
@@ -67,7 +67,7 @@ data:
 {{- end }}
         spec:
           {{- include "hpcc.placementsByJobTargetType" (dict "root" .root "job" $appJobName "target" .me.name "type" "eclagent") | indent 10 }}
-          serviceAccountName: "hpcc-default"
+          serviceAccountName: "hpcc-agent"
 {{- if $misc.postJobCommandViaSidecar }}
           shareProcessNamespace: true
 {{- end }}            
@@ -113,7 +113,7 @@ data:
 {{- $env := concat ($.Values.global.env | default list) (.env | default list) -}}
 {{- $apptype := .type | default "hthor" -}}
 {{- $secretsCategories := list "system" "ecl-user" "ecl" "storage" }}
-{{- $commonCtx := dict "root" $ "me" . "secretsCategories" $secretsCategories "includeCategories" (list "lz" "data" "remote" "spill" "dll") "env" $env }}
+{{- $commonCtx := dict "root" $ "me" . "secretsCategories" $secretsCategories "includeCategories" (list "lz" "data" "remote" "spill" "dll" "debug") "env" $env }}
 {{- $configSHA := include "hpcc.getConfigSHA" ($commonCtx | merge (dict "configMapHelper" "hpcc.agentConfigMap" "component" "eclagent" "excludeKeys" (print "global," $apptype ".replicas"))) }}
 {{- include "hpcc.checkDefaultStoragePlane" $commonCtx }}
 apiVersion: apps/v1
@@ -131,7 +131,7 @@ spec:
         run: {{ .name | quote }}
         accessDali: "yes"
         accessEsp: {{ .useChildProcesses | default false | ternary "yes" "no" | quote }}
-        helmVersion: 8.6.2
+        helmVersion: 8.6.6
 {{- if hasKey . "labels" }}
 {{ toYaml .labels | indent 8 }}
 {{- end }}
@@ -142,15 +142,15 @@ spec:
 {{- end }}
     spec:
       {{- include "hpcc.placementsByPodTargetType" (dict "root" $ "pod" .name "target" .name "type" "eclagent") | indent 6 }}
-      serviceAccountName: {{ .useChildProcesses | default false | ternary "hpcc-default" "hpcc-agent" }}
+      serviceAccountName: "hpcc-agent"
       initContainers:
       {{- include "hpcc.changePlaneMountPerms" $commonCtx | indent 6 }}
       {{- include "hpcc.addImagePullSecrets" $commonCtx | nindent 6 -}}
       containers:
       - name: {{ .name | quote }}
         workingDir: /var/lib/HPCCSystems
-        command: [ agentexec ] 
-        args: [ 
+        command: [ {{ include "hpcc.componentCommand" (dict "me" . "root" $ "process" "agentexec") }} ] 
+        args: [ {{- include "hpcc.componentStartArgs" (dict "me" . "root" $ "process" "agentexec") | nindent 16 }}
                 {{ include "hpcc.configArg" . }},
                 {{ include "hpcc.daliArg" $ }}
               ]
