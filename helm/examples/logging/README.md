@@ -20,50 +20,13 @@ Cluster-level logging for the containerized HPCC Systems cluster can be accompli
 
 _Specific logging tool examples can be found in the child folders_
 
-## HPCC Systems log access
-
-Out of the box, HPCC component logs are handled by K8s drivers, and exposed via the kubectl logs pod command.
-Access to logs processed by other processes such as Elastic Stack, Azure log analytics, etc. is provided by the chosen log processor solution.
-However, HPCC provides a standard interface into the logs. To enable this feature, information about the chosen log processor solution must be provided in
-the global.logAccess portion of the Helm chart.
-For example, if an elastic stack is deployed under the default namespace, and it contains hpcc logs in indexes prefixed 'filebeat-' the following log access configuration would allow log access through HPCC:
-
-    
-    global:
-      logAccess:
-        name: "LocalElasticStack"
-        type: "elasticstack"
-        connection:
-            protocol: "http"
-            host: "elasticsearch-master.default.svc.cluster.local"
-            port: 9200
-        logMaps:
-          - type: "global"                             #These settings apply to all log mappings
-            storeName: "filebeat-*"                    #Logs are expected to be housed in ES indexes prefixed 'filebeat-'
-            searchColumn: "message"                    #The 'message' field is to be targeted for wilcard text searches
-            timeStampColumn: "@timestamp"              #The '@timestamp' field contains time log entry timestamp
-          - type: "workunits"                          #Search by workunits specific log mapping
-            storeName: "filebeat-*"                    # Only needed if differs from global.storeName
-            searchColumn: "hpcc.log.jobid"             # Field containing WU information
-          - type: "components"                         #Search by components specific log mapping
-            searchColumn: "kubernetes.container.name"  # Field containing container information
-          - type: "audience"                           #Search by audience specific log mapping
-            searchColumn: "hpcc.log.audience"          # Field containing audience information
-          - type: "class"                              #Search by log class specific log mapping
-            searchColumn: "hpcc.log.class"             # Field containing log class information
-
-This configuration coincides with the elastic4hpcclogs managed solution found in HPCC-Systems/helm/managed/logging/elastic, and can be provided as part of an HPCC Systems deployment as follows:
-    
-    >helm install HPCC-Systems/helm/hpcc -f HPCC-Platform/helm/managed/logging/elastic/elastic4hpcclogs-hpcc-logaccess.yaml
-
-
 ## HPCC Systems application-level logging details
 
 As mentioned earlier, the HPCC Systems logs provide a wealth of information which can be used for benchmarking, auditing, debugging, monitoring, etc. The type of information provided in the logs and its format is trivially controlled via standard Helm configuration.
 
 By default, the component logs are not filtered, and contain the following columns:
     
-    MessageID TargetAudience LogEntryClass JobID DateStamp TimeStamp ProcessId ThreadID QuotedLogMessage
+    MessageID TargetAudience DateStamp TimeStamp ProcessId ThreadID QuotedLogMessage
 
 The logs can be filtered by TargetAudience, Category or Detail Level, and the output columns can be configured. Logging configuration settings can be applied at the global, or component level.
 
@@ -77,13 +40,13 @@ The availble target audiences include operator(OPR), user(USR), programmer(PRO),
     
 ### Target Category Filtering
 
-The available target categories include disaster(DIS), error(ERR), warning(WRN),information(INF),progress(PRO),metrics(MET). The category (or class) filter is controlled by the `<section>`.logging.classes value, comprised of 3 letter codes delimited by the aggregation operator (+) or the removal operator (-).
+The available target categories include disaster(DIS), error(ERR), warning(WRN),information(INF),progress(PRO). The category (or class) filter is controlled by the `<section>`.logging.classes value, comprised of 3 letter codes delimited by the aggregation operator (+) or the removal operator (-).
     
     For example, the mydali instance's log output to include all classes except for progress:
     helm install myhpcc ./hpcc --set dali[0].logging.classes="ALL-PRO" --set dali[0].name="mydali"
 
 ### Log Detail Level Configuration
-Log output verbosity can be adjusted from "critical messages only" (1) up to "report all messages" (100). The default log level is rather high (80) and should be adjusted accordingly.
+Log output verbosity can be adjusted from "critical messages only" (1) up to "report all messages" (100). By default, the log level is set highest (100). 
 
     For example, verbosity should be medium for all components:
     helm install myhpcc ./hpcc --set global.logging.detail="50"
@@ -92,10 +55,11 @@ Log output verbosity can be adjusted from "critical messages only" (1) up to "re
 
 The available log data columns include messageid(MID), audience(AUD), class(CLS), date(DAT), time(TIM), millitime(MLT), microtime(MCT), nanotime(NNT), processid(PID), threadid(TID), node(NOD), job(JOB), use(USE), session(SES), code(COD), component(COM), quotedmessage(QUO), prefix(PFX), all(ALL), and standard(STD). The log data columns (or fields) configuration is controlled by the `<section>`.logging.fields value, comprised of 3 letter codes delimited by the aggregation operator (+) or the removal operator (-).
     
-    For example, all component log output should include the standard columns except the job ID column:
-    helm install myhpcc ./hpcc --set global.logging.fields="STD-JOB"
+    For example, all component log output should include the standard columns and the log message class name:
+    helm install myhpcc ./hpcc --set global.logging.fields="STD+CLS"
     
 Adjustment of per-component logging values can require assertion of multiple component specific values, which can be inconvinient to do via the --set command line parameter. In these cases, a custom values file could be used to set all required fields.
 
     For example, the ESP component instance 'eclwatch' should output minimal log:
     helm install myhpcc ./hpcc --set -f ./examples/logging/esp-eclwatch-low-logging-values.yaml
+ 

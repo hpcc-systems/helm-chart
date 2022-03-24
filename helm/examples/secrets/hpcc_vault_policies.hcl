@@ -9,7 +9,3 @@ path "secret/data/ecl-user/*" {
 path "secret/data/storage/*" {
     capabilities = ["read"]
 }
-
-path "secret/data/authn/*" {
-    capabilities = ["read"]
-}

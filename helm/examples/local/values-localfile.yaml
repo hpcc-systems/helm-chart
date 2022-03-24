@@ -15,30 +15,42 @@ storage:
   - name: dali
     pvc: dali-localfile-hpcc-localfile-pvc
     prefix: "/var/lib/HPCCSystems/dalistorage"
-    category: dali
+    labels:
+    - dali
 
   - name: dll
     pvc: dll-localfile-hpcc-localfile-pvc
     prefix: "/var/lib/HPCCSystems/queries"
-    category: dll
+    labels:
+    - dll
 
   - name: sasha
     pvc: sasha-localfile-hpcc-localfile-pvc
     prefix: "/var/lib/HPCCSystems/sasha"
-    category: sasha
+    labels:
+    - sasha
 
   - name: data
     pvc: data-localfile-hpcc-localfile-pvc
     prefix: "/var/lib/HPCCSystems/hpcc-data"
-    category: data
+    labels:
+    - data # NB: if not set, this would be the default
 
-  - name: mydropzone
-    pvc: mydropzone-localfile-hpcc-localfile-pvc
-    prefix: "/var/lib/HPCCSystems/mydropzone"
-    category: lz
+
+
+  daliStorage:
+    plane: dali
+
+  dllStorage:
+    plane: dll
+
+  dataStorage:
+    plane: data
 
 sasha:
   wu-archiver:
-    plane: sasha
+    storage:
+      plane: sasha
   dfuwu-archiver:
-    plane: sasha
+    storage:
+      plane: sasha

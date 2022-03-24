@@ -5,6 +5,5 @@ esp:
   auth: none
   tls: off
   replicas: 1
-  service:
-    servicePort: 8123 # This is the service port your logging service will be accessible on.
-    visibility: cluster # generally an ESP logging service would be used by internal components, not accessed by external public
+  servicePort: 8123 # This is the service port your logging service will be accessible on.
+  public: false # generally an ESP logging service would be used by internal components, not accessed by external public
