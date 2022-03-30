@@ -26,30 +26,14 @@
     "storage": {
       "type": "object",
       "properties": {
-        "dllStorage": {
-          "$ref": "#/definitions/storageType"
-        },
-        "dataStorage": {
-          "$ref": "#/definitions/storageType"
-        },
-        "daliStorage": {
-          "$ref": "#/definitions/storageType"
-        },
-        "spillStorage": {
-          "oneOf": [
-            {
-              "$ref": "#/definitions/storageType"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "hostGroups": {
           "$ref": "#/definitions/hostGroups"
         },
         "planes": {
           "$ref": "#/definitions/storagePlanes"
+        },
+        "remote": {
+          "$ref": "#/definitions/remoteStorage"
         }
       },
       "additionalProperties": false
@@ -84,6 +68,9 @@
         "storage": {
           "$ref": "#/definitions/secrets"
         },
+        "authn": {
+          "$ref": "#/definitions/secrets"
+        },
         "ecl": {
           "$ref": "#/definitions/secrets"
         },
@@ -91,6 +78,9 @@
           "$ref": "#/definitions/secrets"
         },
         "codeVerify": {
+          "$ref": "#/definitions/secrets"
+        },
+        "git": {
           "$ref": "#/definitions/secrets"
         },
         "system": {
@@ -107,6 +97,9 @@
           "type": "integer"
         },
         "storage": {
+          "$ref": "#/definitions/vaultCategory"
+        },
+        "authn": {
           "$ref": "#/definitions/vaultCategory"
         },
         "esp": {
@@ -135,6 +128,8 @@
     "dali": {
       "description": "dali process",
       "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
       "items": { "$ref": "#/definitions/dali" }
     },
     "eclccserver": {
@@ -167,7 +162,7 @@
               "type": "string",
               "description": "The (optional) file prefix to add to relative filenames"
             },
-            "storagePlane": {
+            "dataPlane": {
               "description": "The default storage plane to write data files to",
               "type": "string"
             },
@@ -184,25 +179,36 @@
       "description": "dfuserver process",
       "type": "array",
       "items": {
-        "allOf": [
-          {
-            "name": {
-              "type": "string",
-              "description": "The name of the dfuserver process"
-            },
-            "disabled": {
-              "type": "boolean"
-            },
-            "maxJobs": {
-              "type": "integer"
-            },
-            "required": [ "name" ]
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the dfuserver process"
+          },
+          "disabled": {
+            "type": "boolean"
+          },
+          "maxJobs": {
+            "type": "integer"
+          },
+          "env": {
+            "$ref": "#/definitions/env"
+          },
+          "annotations": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
           }
-        ]
+        },
+        "additionalProperties": { "type": ["integer", "string", "boolean"] },
+        "required": [ "name" ]
       }
     },
     "roxie": {
-      "description": "eclagent process",
+      "description": "roxie process",
       "type": "array",
       "items": { "$ref": "#/definitions/roxie" }
     },
@@ -215,6 +221,11 @@
       "description": "sasha services",
       "type": "object",
       "$ref": "#/definitions/sashaservice"
+    },
+    "dafilesrv": {
+      "description": "dafilesrv process",
+      "type": "array",
+      "items": { "$ref": "#/definitions/dafilesrv" }
     }
   },
   "required": [
@@ -229,11 +240,26 @@
         "privileged": {
           "type": "boolean"
         },
+        "noResourceValidation": {
+          "type": "boolean"
+        },
+        "stubInstanceResources": {
+          "$ref": "#/definitions/stubInstanceResources"
+        },
         "image": {
           "$ref": "#/definitions/image"
         },
+        "user": {
+          "$ref": "#/definitions/user"
+        },
+        "env": {
+          "$ref": "#/definitions/env"
+        },
         "logging": {
           "$ref": "#/definitions/logging"
+        },
+        "logAccess": {
+          "$ref": "#/definitions/logAccess"
         },
         "egress": {
           "$ref": "#/definitions/egress"
@@ -248,12 +274,29 @@
           "type": "string"
         },
         "cost": {
-          "description": "resource cost",
+          "description": "default resource cost",
           "type": "object",
           "properties": {
+            "currencyCode": {
+                "description": "currency code (ISO 4217)",
+                "type": "string",
+                "maxLength": 3
+            },
             "perCpu": {
               "description": "cost of a single cpu",
               "type": "number"
+            },
+            "storageAtRest": {
+                "description": "storage cost (GiB per month)",
+                "type": "number"
+            },
+            "storageReads": {
+                "description": "cost per 10,000 read operations",
+                "type": "number"
+            },
+            "storageWrites": {
+                "description": "cost per 10,000 write operations",
+                "type": "number"
             }
           }
         },
@@ -286,6 +329,37 @@
               "$ref" : "#/definitions/sinks"
             }
           }
+        },
+        "visibilities": {
+          "type": "object",
+          "description" : "Global visibilities configuration",
+          "additionalProperties": {
+            "type": "object",
+            "required": [ "type" ],
+            "properties":
+            {
+              "annotations": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              },
+              "labels": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              },
+              "ingress": {
+                "$ref" : "#/definitions/ingress"
+              },
+              "loadBalancerSourceRanges": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "A list of CIDR ranges that you would like to allow for access to the Service"
+              },
+              "type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -293,6 +367,11 @@
     "security": {
       "type": "object",
       "properties": {
+        "mtls": {
+          "description": "enable global mtls between clients (except roxie which has own setting). NB: requires certificates.enabled=true",
+          "type": "boolean",
+          "default": true
+        },
         "eclSecurity": {
           "$ref": "#/definitions/eclSecurity"
         }
@@ -336,50 +415,31 @@
         "pullPolicy": {
           "type": "string",
           "enum": ["IfNotPresent", "Always", "Never"]
+        },
+        "imagePullSecrets": {
+          "type": "string"
         }
       },
       "additionalProperties": false
     },
-    "storageType": {
+    "user": {
       "type": "object",
       "properties": {
-        "storageSize": {
-          "type": "string"
+        "uid": {
+          "type": "integer",
+          "default": 10000
         },
-        "storageClass": {
-          "type": "string"
-        },
-        "plane": {
-          "type": "string"
-        },
-        "existingClaim": {
-          "type": "string"
-        },
-        "forcePermissions": {
-          "type": "boolean"
+        "gid": {
+          "type": "integer",
+          "default": 10001
         }
       },
-      "anyOf": [
-        {
-          "required": [ "storageSize" ]
-        },
-        {
-          "required": [ "plane" ]
-        }
-      ],
       "additionalProperties": false
     },
     "storagePlanes": {
       "description": "storage plane definitions",
-      "oneOf": [
-        {
-          "type": "array",
-          "items": { "$ref": "#/definitions/storagePlane" }
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": "array",
+      "items": { "$ref": "#/definitions/storagePlane" }
     },
     "storagePlane": {
       "description": "information about an individual storage plane",
@@ -389,8 +449,16 @@
           "description": "the name of the storage plane",
           "type": "string"
         },
+        "disabled": {
+          "description": "disable this plane definition",
+          "type": "boolean"
+        },
         "prefix": {
           "description": "either the path for a local mount, or the url prefix",
+          "type": "string"
+        },
+        "subPath": {
+          "description": "optional subdirectory within the mount directory",
           "type": "string"
         },
         "secret": {
@@ -423,10 +491,10 @@
           "type": "array",
           "items": { "type": "string" }
         },
-        "labels": {
-          "description": "a list of labels associated with this plane, e.g. lz, data. NB: if blank/unset, treated as if 'data'",
-          "type": "array",
-          "items": { "type": "string" }
+        "category": {
+          "description": "the category this plane is usd for, e.g. lz, data",
+          "type": "string",
+          "enum": ["data", "lz", "dali", "sasha", "dll", "spill", "temp", "git", "remote", "debug" ]
         },
         "umask" : {
           "description": "file creation mask (used by despray)",
@@ -435,6 +503,18 @@
         "defaultSprayParts" : {
           "description": "Number of parts sprayed by default",
           "type" : "integer"
+        },
+        "storageSize": {
+          "type": "string"
+        },
+        "storageClass": {
+          "type": "string"
+        },
+        "storageMode": {
+          "type": "string"
+        },
+        "forcePermissions": {
+          "type": "boolean"
         },
         "cost" : {
           "description": "Costs associated with the storage and use of the plane",
@@ -445,14 +525,104 @@
               "type": "number"
             }
           }
+        },
+        "subDirPerFilePart" : {
+          "description": "Place each logical file part in its own subdirectory",
+          "type": "boolean",
+          "default": true
         }
-
       },
-      "required": [ "name", "prefix" ],
+      "required": [ "name", "prefix", "category" ],
+      "additionalProperties": false
+    },
+    "remoteStorage": {
+      "description": "remote storage definitions",
+      "type": "array",
+      "items": { "$ref": "#/definitions/remoteStorageEntry" }
+    },
+    "remoteStorageEntry": {
+      "description": "information about an individual remote storage definition",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "the name of the remote storage definition",
+          "type": "string"
+        },
+        "service": {
+          "description": "the remote DFS service",
+          "type": "string"
+        },
+        "secret": {
+          "description": "the name of the secret containing the certificates to connect to the service",
+          "type": "string"
+        },
+        "planes": {
+          "description": "mapping of remote planes to local planes",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "remote": {
+                "type": "string",
+                "description": "The name of the remote plane to map from"
+              },
+              "local": {
+                "type": "string",
+                "description": "The name of the local plane to map to"
+              }
+            }
+          }
+        },
+        "useDafilesrv": { "const": true }
+      },
+      "oneOf":[
+        {
+          "required": [
+            "name",
+            "service",
+            "planes"
+          ]
+        },
+        {
+          "required": [
+            "name",
+            "service",
+            "useDafilesrv"
+          ]
+        }
+      ],
       "additionalProperties": false
     },
     "resources": {
       "type": "object"
+    },
+    "componentCost": {
+      "description": "component level costs",
+      "type": "object",
+      "properties": {
+        "perCpu": {
+          "description": "cost of a single cpu",
+          "type": "number"
+        }
+      }
+    },
+    "memory": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The amount of overall resourced memory to dedicate to the query"
+        },
+        "thirdParty": {
+          "type": "string",
+          "description": "The amount of overall resource memory to reserve for 3rd party use"
+        },
+        "maxMemPercentage": {
+          "type": "number",
+          "description": "The default maximum percentage of resource memory to dedicate to HPCC"
+        }
+      },
+      "additionalProperties": false
     },
     "secrets": {
       "oneOf": [
@@ -551,6 +721,113 @@
         }
       }
     },
+    "auth": {
+      "type": "string",
+      "description": "Authentication method"
+    },
+    "authNZ": {
+      "type": "object",
+      "additionalProperties": { "type": ["object"] }
+    },
+    "ldap": {
+      "type": "object",
+      "required": [ "ldapAddress" ],
+      "additionalProperties": { "type": ["integer", "string", "boolean"] },
+      "properties": {
+        "ldapAddress": {
+          "type": "string",
+          "description": "LDAP Server IP address(es), comma separated"
+        },
+        "ldapProtocol": {
+          "type": "string",
+          "description": "The protocol to use - standard \"LDAP\" or secure \"LDAPS\" over SSL"
+        },
+        "servertype": {
+          "type": "string",
+          "description": "LDAP Server Implementation Type (\"ActiveDirectory\", \"AzureActiveDirectory\")"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of this Active Directory Server component"
+        },
+        "adminGroupName": {
+          "type": "string",
+          "description": "The Active Directory group containing HPCC Administrators"
+        },
+        "filesBasedn": {
+          "type": "string",
+          "description": "The base distinguished name that should be used when looking up HPCC file scopes on the Active Directory server"
+        },
+        "groupsBasedn": {
+          "type": "string",
+          "description": "The base distinguished name that should be used when looking up HPCC groups on the Active Directory server"
+        },
+        "usersBasedn": {
+          "type": "string",
+          "description": "The base distinguished name that should be used when looking up HPCC users on the Active Directory server"
+        },
+        "systemBasedn": {
+          "type": "string",
+          "description": "The base distinguished name of the Active Directory Administrator"
+        },
+        "resourcesBasedn": {
+          "type": "string",
+          "description": "The base distinguished name that should be used when looking up HPCC feature resources on the Active Directory server"
+        },
+        "workunitsBasedn": {
+          "type": "string",
+          "description": "The base distinguished name that should be used when looking up workunit scopes on the Active Directory server"
+        },
+        "ldapAdminSecretKey": {
+          "type": "string",
+          "description": "The key name to be used to look up the Active Directory Administrator account Username/Password"
+        },
+        "ldapAdminVaultId": {
+          "type": "string",
+          "description": "The optional vault name to be used to look up the Active Directory Administrator account Username/Password, using ldapAdminSecretKey"
+        },
+        "hpccAdminSecretKey": {
+          "type": "string",
+          "description": "The optional key name to be used to look up the HPCC Administrator account Username/Password"
+        },
+        "hpccAdminVaultId": {
+          "type": "string",
+          "description": "The optional vault name to be used to look up the HPCC Administrator account Username/Password, using hpccAdminSecretKey"
+        },
+        "ldapPort": {
+          "type": "integer",
+          "description": "The port of the nonsecure Active Directory server"
+        },
+        "ldapSecurePort": {
+          "type": "integer",
+          "description": "The secure port of the secure Active Directory server"
+        },
+        "maxConnections": {
+          "type": "integer",
+          "description": "The maximum number of concurrent LDAP connections to the Active Directory server (default 10)"
+        },
+        "passwordExpirationWarningDays": {
+          "type": "integer",
+          "description": "Within this time period, ECLWatch displays a warning about pending password expiration"
+        },
+        "cacheTimeout": {
+          "type": "integer",
+          "description": "Time in minutes after which the cached security information should be reloaded"
+        },
+        "ldapTimeoutSecs": {
+          "type": "integer",
+          "description": "The maximum number of seconds to wait for most Active Directory calls"
+        },
+        "sharedCache": {
+          "type": "boolean",
+          "description": "Use a single, shared LDAP cache"
+        },
+        "checkScopeScans": {
+          "type": "boolean",
+          "description": "Only return iterated logical file metadata for files that user has scope permission to access"
+        }
+      }
+    },
     "logging": {
       "type": "object",
       "properties": {
@@ -568,6 +845,50 @@
         }
       },
       "additionalProperties": { "type": ["integer", "string", "boolean"] }
+    },
+    "compileOption": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Compiler option name"
+        },
+        "value": {
+          "type": ["number", "string", "boolean"],
+          "description": "Compiler option  value"
+        },
+        "cluster": {
+          "type": "string",
+          "description": "Cluster to apply option to"
+        }
+      },
+      "required": [ "name", "value" ],
+      "additionalProperties": false
+    },
+    "env": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Environment variable name"
+          },
+          "value": {
+            "type": ["number", "string", "boolean"],
+            "description": "Environment variable value"
+          }
+        }
+      }
+    },
+    "ingress": {
+      "type": "array",
+      "items": {
+        "additionalProperties": {
+          "type": "array",
+          "items": { "type": "object" }
+        }
+      }
     },
     "egress": {
       "type": "object",
@@ -591,9 +912,49 @@
       },
       "additionalProperties": false
     },
+    "service": {
+      "description": "Service properties",
+      "type": "object",
+      "required": [ "servicePort", "visibility" ],
+      "properties": {
+        "application": {
+          "type": "string",
+          "description": "Application name"
+        },
+        "port": {
+          "type": "integer",
+          "description": "The local port used by the pod",
+          "default": 8880
+        },
+        "servicePort": {
+          "type": "integer",
+          "description": "The port that this service will be exposed on"
+        },
+        "visibility": {
+          "type": "string",
+          "description": "Should this service be exposed outside the cluster, locally or to the internet"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "ingress": {
+          "$ref" : "#/definitions/ingress"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "loadBalancerSourceRanges": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "A list of CIDR ranges that you would like to allow for access to the Service"
+        }
+      }
+    },
     "dali": {
       "type": "object",
-      "required": [ "name" ],
+      "required": [ "name", "auth" ],
       "additionalProperties": { "type": ["integer", "string", "boolean"] },
       "properties": {
         "name": {
@@ -603,27 +964,59 @@
         "image": {
           "$ref": "#/definitions/image"
         },
+        "env": {
+          "$ref": "#/definitions/env"
+        },
         "logging": {
           "$ref": "#/definitions/logging"
         },
+        "auth": {
+          "$ref": "#/definitions/auth"
+        },
+        "ldap": {
+          "$ref": "#/definitions/ldap"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
         "resources": {
           "$ref": "#/definitions/resources"
+        },
+        "minStartupTime": {
+          "$ref": "#/definitions/minStartupTime"
+        },
+        "maxStartupTime": {
+          "$ref": "#/definitions/maxStartupTime"
         },
         "services": {
           "description": "sasha services",
           "type": "object",
           "$ref": "#/definitions/sashaservice"
+        },
+        "service": {
+          "$ref": "#/definitions/service"
         }
       }
     },
     "eclccserver": {
       "type": "object",
-      "required": [ "name" ],
+      "required": [ "name", "maxActive" ],
       "additionalProperties": { "type": ["integer", "string", "boolean"] },
       "properties": {
         "name": {
           "type": "string",
           "description": "The name of the eclccserver process"
+        },
+        "maxActive": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of compile jobs that can be active simultaneously",
+          "default": 4
         },
         "replicas": {
           "type": "integer"
@@ -636,14 +1029,45 @@
           "type": "boolean",
           "description": "Launch each workunit compile as a child process rather than in its own container"
         },
+        "childProcessTimeLimit": {
+          "type": "integer",
+          "description": "Time limit (in seconds) for child process compilation before aborting and using separate container, when useChildProcesses is false",
+          "default": 10
+        },
+        "gitPlane": {
+          "description": "The storage plane to check git repositories out to",
+          "type": "string"
+        },
         "image": {
           "$ref": "#/definitions/image"
+        },
+        "env": {
+          "$ref": "#/definitions/env"
         },
         "logging": {
           "$ref": "#/definitions/logging"
         },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "options": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/compileOption" }
+        },
+        "gitUsername": {
+          "type": "string",
+          "description": "The username to use for all remote repository access"
+        },
         "resources": {
           "$ref": "#/definitions/resources"
+        },
+        "cost": {
+          "$ref" : "#/definitions/componentCost"
         }
       }
     },
@@ -659,8 +1083,19 @@
         "image": {
           "$ref": "#/definitions/image"
         },
+        "env": {
+          "$ref": "#/definitions/env"
+        },
         "logging": {
           "$ref": "#/definitions/logging"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
         },
         "resources": {
           "$ref": "#/definitions/resources"
@@ -669,7 +1104,7 @@
     },
     "esp": {
       "type": "object",
-      "required": [ "name" ],
+      "required": [ "name", "service", "auth" ],
       "additionalProperties": { "type": ["integer", "string", "boolean"] },
       "properties": {
         "name": {
@@ -682,17 +1117,52 @@
         "image": {
           "$ref": "#/definitions/image"
         },
+        "env": {
+          "$ref": "#/definitions/env"
+        },
         "logging": {
           "$ref": "#/definitions/logging"
         },
         "resources": {
           "$ref": "#/definitions/resources"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "auth": {
+          "$ref": "#/definitions/auth"
+        },
+        "authNZ": {
+          "$ref": "#/definitions/authNZ"
+        },
+        "ldap": {
+          "$ref": "#/definitions/ldap"
+        },
+        "service": {
+          "$ref": "#/definitions/service"
+        },
+        "certificate": {
+          "type": "string",
+          "description": "Name of the secret which contains the TLS certificate.  Custom configuration instead of using, or overriding cert-manager certificate."
+        },
+        "bindingInfo": {
+          "description": "Customizable binding options",
+          "type": "object"
+        },
+        "remoteClients": {
+          "$ref": "#/definitions/remoteClients"
         }
       }
     },
     "eclagent": {
       "type": "object",
       "additionalProperties": { "type": ["integer", "string", "boolean"] },
+      "required": [ "maxActive" ],
       "properties": {
         "replicas": {
           "type": "integer"
@@ -715,15 +1185,32 @@
         "image": {
           "$ref": "#/definitions/image"
         },
+        "env": {
+          "$ref": "#/definitions/env"
+        },
         "logging": {
           "$ref": "#/definitions/logging"
         },
-        "storagePlane": {
+        "dataPlane": {
           "description": "The default storage plane to write data files to",
           "type": "string"
         },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
         "resources": {
           "$ref": "#/definitions/resources"
+        },
+        "jobMemory": {
+          "$ref": "#/definitions/memory"
+        },
+        "cost": {
+          "$ref" : "#/definitions/componentCost"
         }
       }
     },
@@ -740,11 +1227,20 @@
           "type": "string",
           "description": "The (optional) file prefix to add to relative filenames"
         },
+        "minStartupTime": {
+          "$ref": "#/definitions/minStartupTime"
+        },
+        "maxStartupTime": {
+          "$ref": "#/definitions/maxStartupTime"
+        },
         "image": {
           "$ref": "#/definitions/image"
         },
         "topoServer": {
           "$ref": "#/definitions/toposerver"
+        },
+        "env": {
+          "$ref": "#/definitions/env"
         },
         "logging": {
           "$ref": "#/definitions/logging"
@@ -759,24 +1255,630 @@
           "type": "array",
           "items": { "$ref": "#/definitions/roxieservice" }
         },
-        "storagePlane": {
+        "dataPlane": {
           "description": "The default storage plane to write data files to",
           "type": "string"
+        },
+        "directAccessPlanes": {
+          "description": "A list of storage planes suitable for roxie to read from directly and not have roxie copy the data to roxie's default plane",
+          "type": "array",
+          "items": { "type": "string" }
         },
         "spillPlane": {
           "description": "The storage plane to write spill files to",
           "type": "string"
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
         },
         "serverResources": {
           "$ref": "#/definitions/resources"
         },
         "channelResources": {
           "$ref": "#/definitions/resources"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "certificate": {
+          "type": "string",
+          "description": "Name of the secret which contains the TLS certificate.  Custom configuration instead of using, or overriding cert-manager certificate."
+        },
+        "allFilesDynamic": { 
+          "type": "boolean",
+          "default": false,
+          "description": "If enabled, files will be resolved per-query and not locked between queries"
+        },
+        "backgroundCopyClass": { 
+          "type": "string",
+          "default": "none",
+          "enum": [ "none", "best-effort", "idle"],
+          "description": "Specify an IONICE class for the background copy thread."
+        },
+        "backgroundCopyPrio": { 
+          "type": "integer",
+          "default": 0,
+          "description": "Specify an IONICE value for the background copy thread, if backgroundCopyClass set to best-effort."
+        },
+        "callbackRetries": { 
+          "type": "integer",
+          "default": 3,
+          "minimum": 1,
+          "description": "Number of retries before callbacks from agents to server are aborted"
+        },
+        "callbackTimeout": { 
+          "type": "integer",
+          "default": 5000,
+          "minimum": 0,
+          "description": "Timeout (in ms) before callbacks from agents to server are resent"
+        },
+        "checkFileDate": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Compare file dates of physical files with the information in DFS."
+        },
+        "collectFactoryStatistics": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Accumulate summary statistics for all queries"
+        },
+        "copyResources": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Copies any missing data files/keys from the position they were in when query was deployed."
+        },
+        "defaultHighPriorityTimeLimit": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Maximum run time (in ms) for any single active high-priority query (if not overridden)"
+        },
+        "defaultHighPriorityTimeWarning": { 
+          "type": "integer",
+          "default": 5000,
+          "minimum": 0,
+          "description": "Time (in ms) before generating SNMP warning for a high-priority query (if not overridden)"
+        },
+        "defaultLowPriorityTimeLimit": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Maximum run time (in ms) for any single active low-priority query (if not overridden)"
+        },
+        "defaultLowPriorityTimeWarning": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Time (in ms) before generating SNMP warning for a low-priority query (if not overridden)"
+        },
+        "defaultMemoryLimit": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Maximum amount of memory available for row data in any single active query (if not overridden)"
+        },
+        "defaultSLAPriorityTimeLimit": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Maximum run time (in ms) for any single active SLA-high-priority query (if not overridden)"
+        },
+        "defaultSLAPriorityTimeWarning": { 
+          "type": "integer",
+          "default": 5000,
+          "minimum": 0,
+          "description": "Time (in ms) before generating SNMP warning for a SLA-high-priority query (if not overridden)"
+        },
+        "defaultStripLeadingWhitespace": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Default value for stripping leading whitespace in input XML values"
+        },
+        "encryptionInTransit": { 
+          "type": "boolean",
+          "default": false,
+          "description": "Encrypt traffic between Roxie nodes."
+        },
+        "flushJHtreeCacheOnOOM": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Should the index node memory allocation flush the cache and retry if memory allocation fails"
+        },
+        "fieldTranslationEnabled": {
+          "default": "payload",
+          "enum": ["false", "true", "payload"],
+          "description": "Enables translation (where possible) of mismatched file layouts on-the-fly. Specify 'payload' to attempt to translate payload fields only"
+        },
+        "highTimeout": { 
+          "type": "integer",
+          "default": 2000,
+          "minimum": 0,
+          "description": "Timeout (in ms) before high priority requests are resent to agents"
+        },
+        "httpCallerIdHeader": { 
+          "type": "string",
+          "default": "HPCC-Caller-Id",
+          "description": "HTTP Header field to use for sending and receiving CallerId"
+        },
+        "httpGlobalIdHeader": { 
+          "type": "string",
+          "default": "HPCC-Global-Id",
+          "description": "HTTP Header field to use for sending and receiving GlobalId"
+        },
+        "ignoreOrphans": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Treat out-of-date local files as if they were not present."
+        },
+        "ignoreFileDateMismatches": { 
+          "type": "boolean",
+          "default": false,
+          "description": "Ignore mismatched file dates on local files"
+        },
+        "fileTimeFuzzySeconds": { 
+          "type": "integer",
+          "default": 0,
+          "description": "Ignore mismatched file dates of up to this amount"
+        },
+        "lazyOpen": {
+          "type": "boolean",
+          "default": false,
+          "description": "Delay opening files until first use."
+        },
+        "localFilesExpire": { 
+          "type": "integer",
+          "default": -1,
+          "description": "Period (in ms) of inactivity before a local datafile handle is closed"
+        },
+        "lockSuperFiles": { 
+          "type": "boolean",
+          "default": false,
+          "description": "If enabled, superfiles will be locked while queries that use them are loaded"
+        },
+        "lowTimeout": { 
+          "type": "integer",
+          "default": 10000,
+          "minimum": 0,
+          "description": "Timeout (in ms) before low priority requests are resent to agents"
+        },
+        "maxHttpConnectionRequests": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Max number of query requests per persistent http connection"
+        },
+        "maxHttpKeepAliveWait": { 
+          "type": "integer",
+          "default": 5000,
+          "minimum": 0,
+          "description": "Max number of miliseconds to wait for additional requests on a persistent http connection"
+        },
+        "maxLocalFilesOpen": { 
+          "type": "integer",
+          "default": 4000,
+          "minimum": 0,
+          "description": "Maximum number of local files to keep open"
+        },
+        "maxRemoteFilesOpen": { 
+          "type": "integer",
+          "default": 1000,
+          "minimum": 0,
+          "description": "Maximum number of remote files to keep open"
+        },
+        "minLocalFilesOpen": { 
+          "type": "integer",
+          "default": 2000,
+          "minimum": 0,
+          "description": "Minimum number of local files to keep open"
+        },
+        "minRemoteFilesOpen": { 
+          "type": "integer",
+          "default": 500,
+          "minimum": 0,
+          "description": "Minimum number of remote files to keep open"
+        },
+        "parallelQueryLoadThreads": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Use up to n multiple threads for initial query loading"
+        },
+        "preloadOnceData": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Evaluate : ONCE sections of queries at query load time"
+        },
+        "prestartAgentThreads": { 
+          "type": "boolean",
+          "default": false,
+          "description": "Prestart agent worker threads at startup"
+        },
+        "reloadRetriesSuspended": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Retry loading of suspended queries whenever QuerySet reloads"
+        },
+        "remoteFilesExpire": { 
+          "type": "integer",
+          "default": 3600000,
+          "minimum": 0,
+          "description": "Period (in ms) of inactivity before a remote datafile handle is closed"
+        },
+        "serverThreads": { 
+          "type": "integer",
+          "default": 30,
+          "minimum": 0,
+          "description": "Default number of threads processing Roxie server requests (if not specified on service)"
+        },
+        "slaTimeout": { 
+          "type": "integer",
+          "default": 2000,
+          "minimum": 0,
+          "description": "Timeout (in ms) before SLA high priority requests are resent to agents"
+        },
+        "agentQueryReleaseDelaySeconds": { 
+          "type": "integer",
+          "default": 60,
+          "minimum": 0,
+          "description": "Delay before unregistering slave queries to allow in-flight to complete. Files are locked until query is unregistered."
+        },
+        "agentThreads": { 
+          "type": "integer",
+          "default": 30,
+          "minimum": 0,
+          "description": "Number of threads processing agent requests"
+        },
+        "statsExpiryTime": { 
+          "type": "integer",
+          "default": 3600,
+          "minimum": 0,
+          "description": "Time (in seconds) that detailed reporting stats are kept"
+        },
+        "totalMemoryLimit": { 
+          "type": "string",
+          "default": "1G",
+          "description": "Maximum amount of memory available for row data in all active queries"
+        },
+        "heapUseHugePages": { 
+          "type": "boolean",
+          "default": false,
+          "description": "Allow roxie to use memory from huge pages if they have been configured."
+        },
+        "heapUseTransparentHugePages": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Allow roxie to use memory from transparent huge pages."
+        },
+        "heapRetainMemory": { 
+          "type": "boolean",
+          "default": false,
+          "description": "Retain and do not return unused memory to the operating system."
+        },
+        "trapTooManyActiveQueries": { 
+          "type": "boolean",
+          "default": true,
+          "description": "should an SNMP trap get sent when too many active query error occurs"
+        },
+        "useMemoryMappedIndexes": { 
+          "type": "boolean",
+          "default": false,
+          "description": "Using memory-mapped files when merging multiple result streams from row-compressed indexes."
+        },
+        "useRemoteResources": { 
+          "type": "boolean",
+          "default": false,
+          "description": "Reads any missing data files/keys from the position they were in when deployed."
+        },
+        "traceLevel": { 
+          "type": "integer",
+          "default": 1,
+          "minimum": 0,
+          "description": "Level of detail in reporting (set to 0 for none, 1 for normal, > 1 or more for extended)"
+        },
+        "logFullQueries": { 
+          "type": "boolean",
+          "default": false,
+          "description": "Log full text (unless blindLogging) and resource usage of all queries received "
+        },
+        "blindLogging": { 
+          "type": "boolean",
+          "default": false,
+          "description": "Suppress all logging of any data or query text"
+        },
+        "memTraceLevel": { 
+          "type": "integer",
+          "default": 1,
+          "minimum": 0,
+          "description": "Level of detail in reporting mem mgr information(set to 0 for none, 1 for normal, >1 or more for extended)"
+        },
+        "miscDebugTraceLevel": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Level of miscellaneous debug tracing unrelated to all other tracing(set to 0 for none, 1 for normal, >1 or more for extended)"
+        },
+        "soapTraceLevel": { 
+          "type": "integer",
+          "default": 1,
+          "minimum": 0,
+          "description": "Level of detail in reporting SOAPCALL information(set to 0 for none, 1 for normal, >1 or more for extended)"
+        },
+        "traceTranslations": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Trace record layout translations to log file"
+        },
+        "traceEnabled": { 
+          "type": "boolean",
+          "default": false,
+          "description": "TRACE activity output enabled by default (can be overridden in workunit or query)"
+        },
+        "traceLimit": { 
+          "type": "integer",
+          "default": 10,
+          "minimum": 0,
+          "description": "Number of rows output by TRACE activity"
+        },
+        "udpTraceLevel": { 
+          "type": "integer",
+          "default": 1,
+          "minimum": 0,
+          "description": "Level of detail in reporting udp information(set to 0 for none, 1 for normal, >1 or more for extended)"
+        },
+        "udpAdjustThreadPriorities": { 
+          "type": "boolean",
+          "default": false,
+          "description": "Should UDP socket reading threads operate at elevated priority"
+        },
+        "udpFlowSocketsSize": { 
+          "type": "integer",
+          "default": 131072,
+          "minimum": 0,
+          "description": "Controls the read socket buffer size of the UDP layer flow control sockets"
+        },
+        "udpLocalWriteSocketSize": { 
+          "type": "integer",
+          "default": 1024000,
+          "minimum": 0,
+          "description": "Controls the write socket buffer size of the local UDP sockets (Agent to Server on same node)"
+        },
+        "udpAgentBufferSize": { 
+          "type": "integer",
+          "default": 262142,
+          "minimum": 0,
+          "description": "Controls the read socket buffer size of the UDP agent read sockets"
+        },
+        "udpOutQsPriority": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Turns on/off Priority weight-based for output queues (0 round-robin no priority - old logic, 1 round-robin new logic, 2 and higher is factor of priority)"
+        },
+        "udpQueueSize": { 
+          "type": "integer",
+          "default": 100,
+          "minimum": 0,
+          "description": "UDP transport layer receive queue size"
+        },
+        "udpResendLostPackets": { 
+          "type": "boolean",
+          "default": true,
+          "description": "UDP transport layer resend lost packets"
+        },
+        "udpSendQueueSize": { 
+          "type": "integer",
+          "default": 50,
+          "minimum": 0,
+          "description": "UDP transport layer send queue size"
+        },
+        "udpStatsReportInterval": { 
+          "type": "integer",
+          "default": 60000,
+          "minimum": 0,
+          "description": "UDP transport layer stats reporting interval"
+        },
+        "blobCacheMem": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Size (in Mb) of blob index page cache"
+        },
+        "leafCacheMem": { 
+          "type": "integer",
+          "default": 50,
+          "minimum": 0,
+          "description": "Size (in Mb) of leaf index page cache"
+        },
+        "nodeCacheMem": { 
+          "type": "integer",
+          "default": 100,
+          "minimum": 0,
+          "description": "Size (in Mb) of non-leaf index page cache"
+        },
+        "mysqlCacheCheckPeriod": { 
+          "type": "integer",
+          "default": 10000,
+          "minimum": 0,
+          "description": "Time to wait (ms) between checking if any cached MySQL connections can be closed"
+        },
+        "mysqlCacheTimeoutPeriod": { 
+          "type": "integer",
+          "default": 60000,
+          "minimum": 0,
+          "description": "Time to wait (ms) before closing a cached MySQL connection"
+        },
+        "mysqlConnectionCacheSize": { 
+          "type": "integer",
+          "default": 10000,
+          "minimum": 0,
+          "description": "Number of MySQL connections to hold in cache"
+        },
+        "checkCompleted": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Check pending replies when agent gets a retry request"
+        },
+        "dafilesrvLookupTimeout": { 
+          "type": "integer",
+          "default": 10000,
+          "minimum": 0,
+          "description": "Maximum time (in milliseconds) dafilesrv will wait before timing out the first time through the list"
+        },
+        "defaultConcatPreload": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Default concat preload"
+        },
+        "defaultFetchPreload": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Default fetch preload"
+        },
+        "defaultFullKeyedJoinPreload": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Default full keyed join preload"
+        },
+        "defaultKeyedJoinPreload": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Default keyed join preload"
+        },
+        "defaultParallelJoinPreload": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Default parallel join preload"
+        },
+        "defaultPrefetchProjectPreload": { 
+          "type": "integer",
+          "default": 10,
+          "minimum": 0,
+          "description": "Default prefetch value for PROJECT,PREFETCH activity"
+        },
+        "doIbytiDelay": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Enables the IBYTI delay logic in the agents."
+        },
+        "enableHeartBeat": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Enable HeartBeat messages to roxiepipe clients"
+        },
+        "fastLaneQueue": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Enable special fast-lane queue for simple queries."
+        },
+        "ignoreMissingFiles": { 
+          "type": "boolean",
+          "default": false,
+          "description": "Ignore missing files"
+        },
+        "indexReadChunkSize": { 
+          "type": "integer",
+          "default": 60000,
+          "minimum": 0,
+          "description": "Break up results from indexRead (and other remote activities) every N bytes"
+        },
+        "initIbytiDelay": { 
+          "type": "integer",
+          "default": 50,
+          "minimum": 0,
+          "description": "Initial time (in milliseconds) a secondary agent will wait for an IBYTI packet from a primary peer."
+        },
+        "mtuPayload": { 
+          "type": "integer",
+          "default": 1400,
+          "minimum": 1400,
+          "maximum": 9000,
+          "description": "Set higher than 1400 for networks with a larger MTU."
+        },
+        "linuxYield": { 
+          "type": "boolean",
+          "default": false,
+          "description": "Yield to scheduler in some tight loops. May help latency on uniprocessor machines"
+        },
+        "maxBlockSize": { 
+          "type": "integer",
+          "default": 10000000,
+          "minimum": 0,
+          "description": "Max size of block read from client socket"
+        },
+        "maxLockAttempts": { 
+          "type": "integer",
+          "default": 5,
+          "minimum": 0,
+          "description": "Number of retries to get lock for global queries"
+        },
+        "memoryStatsInterval": { 
+          "type": "integer",
+          "default": 60,
+          "minimum": 0,
+          "description": "Interval (in seconds) between reports on Roxie heap usage"
+        },
+        "memTraceSizeLimit": { 
+          "type": "integer",
+          "default": 10,
+          "minimum": 0,
+          "description": "Generate stacktrace whenever a request is made for a row larger than this threshold (0 to disable)"
+        },
+        "parallelAggregate": { 
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "description": "Number of parallel threads to use for in-memory aggregate processing. Set to 0 to use one per CPU, 1 to disable parallel processing of in-memory aggregates"
+        },
+        "perChannelFlowLimit": { 
+          "type": "integer",
+          "default": 10,
+          "minimum": 1,
+          "description": "Number of pending queries permitted per channel (per active activity) before blocking"
+        },
+        "pingInterval": { 
+          "type": "integer",
+          "default": 60,
+          "minimum" : 0,
+          "description": "Interval (in seconds) between Roxie server ping tests"
+        },
+        "preabortIndexReadsThreshold": { 
+          "type": "integer",
+          "default": 100,
+          "minimum": 0,
+          "description": "Use seek to precheck keyed limits (i.e. assume ,COUNT) on index reads if limit greater than this value"
+        },
+        "preabortKeyedJoinsThreshold": { 
+          "type": "integer",
+          "minimum" : 0,
+          "default": 100,
+          "description": "Use seek to precheck limits on keyed joins if limit greater than this value"
+        },
+        "simpleLocalKeyedJoins": { 
+          "type": "boolean",
+          "default": true,
+          "description": "Enable single-threaded local keyed joins"
+        },
+        "socketCheckInterval": { 
+          "type": "integer",
+          "default": 5000,
+          "minimum": 0,
+          "description": "Interval (in milliseconds) between checks that client socket is still open"
         }
       }
     },
     "toposerver": {
       "type": "object",
+      "additionalProperties": { "type": ["integer", "string", "boolean"] },
       "properties": {
         "port": {
           "type": "integer"
@@ -787,8 +1889,19 @@
         "replicas": {
           "type": "integer"
         },
+        "env": {
+          "$ref": "#/definitions/env"
+        },
         "logging": {
           "$ref": "#/definitions/logging"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
         }
       }
     },
@@ -799,7 +1912,12 @@
           "type": "string"
         },
         "port": {
-          "type": "integer"
+          "type": "integer",
+          "description": "The local port used by the pod (same as servicePort if not specified)"
+        },
+        "servicePort": {
+          "type": "integer",
+          "description": "The port that this service will be exposed on"
         },
         "numThreads": {
           "type": "integer"
@@ -807,11 +1925,27 @@
         "listenQueue": {
           "type": "integer"
         },
-        "external": {
-          "type": "boolean"
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "ingress": {
+          "$ref" : "#/definitions/ingress"
+        },
+        "visibility": {
+          "type": "string",
+          "description": "Should this service be exposed outside the cluster, locally or to the internet"
+        },
+        "tls": {
+          "type": "boolean",
+          "description": "Whether the roxie service uses tls.  Requires cert-manager or custom certificate."
         }
       },
-      "required": [ "name", "port" ],
+      "required": [ "name", "servicePort" ],
       "additionalProperties": false
     },
     "bundle": {
@@ -842,6 +1976,12 @@
           "type": "integer",
           "description": "The number of worker pods",
           "minimum": 1
+        },
+        "numWorkersPerPod": {
+          "type": "integer",
+          "description": "The number of workers to place per pod (must be a factor of numWorkers)",
+          "minimum": 1,
+          "default": 1
         },
         "maxJobs": {
           "type": "integer",
@@ -887,16 +2027,36 @@
         "image": {
           "$ref": "#/definitions/image"
         },
+        "env": {
+          "$ref": "#/definitions/env"
+        },
         "logging": {
           "$ref": "#/definitions/logging"
         },
-        "storagePlane": {
+        "dataPlane": {
           "description": "The default storage plane to write data files to",
           "type": "string"
         },
         "spillPlane": {
           "description": "The storage plane to write spill files to",
           "type": "string"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "eclAgentMemory": {
+          "$ref": "#/definitions/memory"
+        },
+        "workerMemory": {
+          "$ref": "#/definitions/memory"
+        },
+        "managerMemory": {
+          "$ref": "#/definitions/memory"
         },
         "managerResources": {
           "$ref": "#/definitions/resources"
@@ -906,6 +2066,13 @@
         },
         "eclAgentResources": {
           "$ref": "#/definitions/resources"
+        },
+        "cost": {
+          "$ref" : "#/definitions/componentCost"
+        },
+        "expert": {
+          "description": "Custom internal options usually reserved for internal testing",
+          "type": "object"
         }
       }
     },
@@ -919,11 +2086,40 @@
           "type": "integer",
           "default": 1
         },
-        "servicePort": {
-          "type": "integer"
+        "env": {
+          "$ref": "#/definitions/env"
         },
-        "port": {
-          "type": "integer"
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "service": {
+          "description": "Service properties",
+          "type": "object",
+          "required": [ "servicePort" ],
+          "properties": {
+            "port": {
+              "type": "integer",
+              "description": "The local port used by the pod",
+              "default": 8880
+            },
+            "servicePort": {
+              "type": "integer",
+              "description": "The port that this service will be exposed on"
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            }
+          }
         },
         "at" : {
           "type": "string",
@@ -933,8 +2129,12 @@
           "type": "integer",
           "description": "throttle ratio percentage (0-99, 0 no throttling, 50 is half speed)"
         },
-        "storage": {
-          "$ref": "#/definitions/storageType"
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "plane": {
+          "type": "string",
+          "description": "which storage plane to store the sasha data on"
         },
         "resources": {
           "$ref": "#/definitions/resources"
@@ -966,16 +2166,19 @@
               "properties": {
                 "minDeltaSize": {
                   "type": "integer",
-                  "description": "Coalescing will only begin, if the delta size is above this threashold (K)"
+                  "description": "Coalescing will only begin, if the delta size is above this threshold (K)"
                 },
                 "disabled": {},
                 "interval": {},
-                "servicePort": {},
-                "port": {},
+                "service": {},
                 "at" : {},
                 "throttle": {},
-                "storage": {},
-                "resources": {}    
+                "image": {},
+                "plane": {},
+                "resources": {},
+                "env": {},
+                "annotations": {},
+                "labels": {}
               },
               "additionalProperties": false
             }
@@ -990,6 +2193,7 @@
       "oneOf": [
         {
           "type": "object",
+          "required": [ "plane" ],
           "allOf": [
             { "$ref": "#/definitions/sashacommon" },
             { "$ref": "#/definitions/sasha-limitcutoff" },
@@ -1018,12 +2222,15 @@
                 },
                 "disabled": {},
                 "interval": {},
-                "servicePort": {},
-                "port": {},
+                "service": {},
                 "at" : {},
                 "throttle": {},
-                "storage": {},
+                "image": {},
+                "plane": {},
                 "resources": {},
+                "env": {},
+                "annotations": {},
+                "labels": {},
                 "limit": {},
                 "cutoff": {}    
               },
@@ -1040,6 +2247,7 @@
       "oneOf": [
         {
           "type": "object",
+          "required": [ "plane" ],
           "allOf": [ 
             { "$ref": "#/definitions/sashacommon" },
             { "$ref": "#/definitions/sasha-limitcutoff" },
@@ -1048,12 +2256,15 @@
               {
                 "disabled": {},
                 "interval": {},
-                "servicePort": {},
-                "port": {},
+                "service": {},
                 "at" : {},
                 "throttle": {},
-                "storage": {},
+                "image": {},
+                "plane": {},
                 "resources": {},
+                "env": {},
+                "annotations": {},
+                "labels": {},
                 "limit": {},
                 "cutoff": {}
               },
@@ -1077,12 +2288,15 @@
               "properties": {
                 "disabled": {},
                 "interval": {},
-                "servicePort": {},
-                "port": {},
+                "service": {},
                 "at" : {},
                 "throttle": {},
-                "storage": {},
+                "image": {},
+                "plane": {},
                 "resources": {},
+                "env": {},
+                "annotations": {},
+                "labels": {},
                 "limit": {},
                 "cutoff": {}    
               },
@@ -1117,12 +2331,14 @@
             },
             "disabled": {},
             "interval": {},
-            "servicePort": {},
-            "port": {},
+            "service": {},
             "at" : {},
             "throttle": {},
-            "storage": {},
-            "resources": {}
+            "image": {},
+            "plane": {},
+            "resources": {},
+            "annotations": {},
+            "labels": {}
           },
           "additionalProperties": false
         },
@@ -1163,6 +2379,36 @@
         }
       ]
     },
+    "dafilesrv": {
+      "type": "object",
+      "required": [ "name", "service" ],
+      "additionalProperties": { "type": ["integer", "string", "boolean"] },
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the dafilesrv process"
+        },
+        "service": {
+          "$ref": "#/definitions/service"
+        },
+        "parallelRequestLimit": {
+          "type": "integer",
+          "default": "20"
+        },
+        "replicas": {
+          "type": "integer"
+        },
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "logging": {
+          "$ref": "#/definitions/logging"
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
+        }
+      }
+    },
     "placement": {
       "type": "object",
       "properties": {
@@ -1177,6 +2423,10 @@
         },
         "schedulerName": {
           "type": "string"
+        },
+        "topologySpreadConstraints": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/topologySpreadConstraint" }
         }
       }
     },
@@ -1210,6 +2460,28 @@
         }
       }
     },
+    "topologySpreadConstraint": {
+      "type": "object",
+      "properties": {
+        "maxSkew": {
+          "type": "integer",
+          "description": "describes the degree to which Pods may be unevenly distributed. It must be greater than zero"
+        },
+        "topologyKey": {
+          "type": "string",
+          "description": "is the key of node labels"
+        },
+        "whenUnsatisfiable": {
+          "type": "string",
+          "enum": ["DoNotSchedule", "ScheduleAnyway"],
+          "description": "indicates how to deal with a Pod if it doesn't satisfy the spread constraint"
+        },
+        "labelSelector": {
+          "type": "object",
+          "description": "labelSelector is used to find matching Pods"
+        }
+      }
+    },
     "issuer": {
       "type": "object",
       "required": [ "name" ],
@@ -1228,6 +2500,75 @@
         "spec": {
           "description": "The cert-manager spec for the issuer. Should match issuer spec(s) defined by https://cert-manager.io/docs/configuration/",
           "type": "object"
+        }
+      }
+    },
+    "minStartupTime": {
+      "description": "The time to wait before initiating startup probing (in seconds). Default 0",
+      "type": "integer"
+    },
+    "maxStartupTime": {
+      "description": "The time to wait before startup probing fails (in seconds). Default 300",
+      "type": "integer"
+    },
+    "logAccess": {
+      "type" : "object",
+      "description" : "Remote log access information",
+      "properties" : {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "description": "Name of HPCC LogAccess plugin type such as 'elasticstack'"
+        },
+        "connection" : {
+          "$ref" : "#/definitions/logAccessConnection"
+        },
+        "logMaps": {
+          "description": "A list of log maps",
+          "type": "array",
+          "items": {
+            "$ref" : "#/definitions/logMap"
+           }
+        }
+      }
+    },
+    "logAccessConnection": {
+      "type": "object",
+      "description" : "Connection information for target remote log access",
+      "properties": {
+        "protocol": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        }
+      }
+    },
+    "logMap": {
+      "type": "object",
+      "description" : "Provides log-store mapping to searchable HPCC log columns",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description" : "The searchable HPCC log column to be mapped - 'global' applies to all known fields",
+          "enum": [ "global", "workunits", "components", "audience", "class" ]
+        },
+        "timeStampColumn": {
+          "description" : "Name of timestamp column related to mapped field (only requried for 'global' mapping)",
+          "type": "string"
+        },
+        "searchColumn": {
+          "description" : "Name of column mapped to HPCC log entry column",
+          "type": "string"
+        },
+        "storeName": {
+          "description" : "Name of container housing mapped HPCC log column",
+          "type": "string"
         }
       }
     },
@@ -1258,6 +2599,35 @@
         "type",
         "name"
       ]
+    },
+    "stubInstanceResources": {
+      "type": "object",
+      "description" : "resource definitions per instance for stub components",
+      "properties": {
+        "memory": {
+          "description": "default per stub instance memory requirements",
+          "type": "string",
+          "default": "200Mi"
+        },
+        "cpu": {
+          "description": "default per stub instance milli cpu requirements",
+          "type": "string",
+          "default": "50m"
+        },
+        "additionalProperties": false
+      }
+    },
+    "remoteClients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Remote client name"
+          }
+        }
+      }
     }
   }
 }
