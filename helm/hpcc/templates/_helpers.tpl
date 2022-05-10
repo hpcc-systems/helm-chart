@@ -949,6 +949,14 @@ Generate list of available services
   class: esp
   type: {{ $esp.application }}
   port: {{ $esp.service.servicePort }}
+  {{- if (eq "ldap" $esp.auth) }}
+    {{- if $esp.ldap.resourcesBasedn }}
+  resourcesBasedn: {{ $esp.ldap.resourcesBasedn }}
+    {{ end -}}
+    {{- if $esp.ldap.workunitsBasedn }}
+  workunitsBasedn: {{ $esp.ldap.workunitsBasedn }}
+    {{ end -}}
+  {{ end -}}
   {{- include "hpcc.addTLSServiceEntries" (dict "root" $ "service" $esp "component" $esp "visibility" $esp.service.visibility "remoteClients" $esp.remoteClients) }}
 {{ end -}}
 {{- range $dali := $.Values.dali -}}
@@ -1158,7 +1166,7 @@ kind: Service
 metadata:
   name: {{ $lvars.serviceName | quote }}
   labels:
-    helmVersion: 8.6.22
+    helmVersion: 8.6.24
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}
 {{- end }}
