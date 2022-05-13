@@ -80,7 +80,7 @@ data:
 {{ range $roxie := $.Values.roxie -}}
 {{- if not $roxie.disabled -}}
 {{- $env := concat ($.Values.global.env | default list) (.env | default list) -}}
-{{- $secretsCategories := list "system" "ecl-user" "ecl" "storage" }}
+{{- $secretsCategories := list "system" "eclUser" "ecl" "storage" }}
 {{- $toposerver := ($roxie.topoServer | default dict) -}}
 {{- $commonCtx := dict "root" $ "me" $roxie "includeCategories" (list "lz" "data" "remote" "spill" "dll" "debug") "secretsCategories" $secretsCategories "toposerver" $toposerver "env" $env }}
 {{- $_ := set $commonCtx "toponame" (printf "%s-toposerver" $roxie.name) -}}
@@ -115,7 +115,7 @@ spec:
       labels:
         run: {{ $commonCtx.toponame | quote }}
         roxie-cluster: {{ $roxie.name | quote }}
-        helmVersion: 8.6.24
+        helmVersion: 8.6.26
 {{- if hasKey $.Values.global "metrics" }}
  {{- include "hpcc.generateMetricsReporterLabel"  $.Values.global.metrics | nindent 8}}
 {{- end }}
@@ -175,7 +175,7 @@ kind: Service
 metadata:
   name: {{ $commonCtx.toponame | quote }}
   labels:
-    helmVersion: 8.6.24
+    helmVersion: 8.6.26
 spec:
   ports:
   - port: {{ $commonCtx.topoport  }}
@@ -234,7 +234,7 @@ spec:
         roxie-cluster: {{ $roxie.name | quote }}
         accessDali: "yes"
         accessEsp: "yes"
-        helmVersion: 8.6.24
+        helmVersion: 8.6.26
 {{- if hasKey $.Values.global "metrics" }}
  {{- include "hpcc.generateMetricsReporterLabel" $.Values.global.metrics | nindent 8}}
 {{- end }}
@@ -335,7 +335,7 @@ spec:
         roxie-cluster: {{ $roxie.name | quote }}
         accessDali: "yes"
         accessEsp: "yes"
-        helmVersion: 8.6.24
+        helmVersion: 8.6.26
 {{- if hasKey $.Values.global "metrics" }}
  {{- include "hpcc.generateMetricsReporterLabel" $.Values.global.metrics | nindent 8}}
 {{- end }}
