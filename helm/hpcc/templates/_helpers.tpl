@@ -1166,7 +1166,7 @@ kind: Service
 metadata:
   name: {{ $lvars.serviceName | quote }}
   labels:
-    helmVersion: 8.6.28
+    helmVersion: 8.6.30
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}
 {{- end }}
@@ -1376,12 +1376,15 @@ Pass in root, me and command
 {{- define "hpcc.addCommandAndLifecycle" -}}
 {{- $misc := .root.Values.global.misc | default dict }}
 {{- $postJobCommand := $misc.postJobCommand | default "" }}
-{{- if and (not $misc.postJobCommandViaSidecar) $postJobCommand }}
 lifecycle:
   preStop:
     exec:
       command:
+      - "/bin/bash"
+      - "-c"
       - >-
+          [ -s tmpdir ] && [ -d $(cat tmpdir) ] && rm -rf $(cat tmpdir)
+{{- if and (not $misc.postJobCommandViaSidecar) $postJobCommand }} ;
           {{ $postJobCommand }}
 {{- end }}
 command: ["/bin/bash"]
@@ -1395,7 +1398,8 @@ args:
  {{- $_ := set $check_cmd "command" (printf "check_executes -d %s -- %s" $prefix .command) -}}
 {{- end }}
 - >-
-    {{ $check_cmd.command }}
+    {{ $check_cmd.command }};
+    [ -s tmpdir ] && [ -d $(cat tmpdir) ] && rm -rf $(cat tmpdir)
 {{- if $misc.postJobCommandViaSidecar -}} ;
     touch /wait-and-run/{{ .me.name }}.jobdone
 {{- else if $postJobCommand -}} ;
