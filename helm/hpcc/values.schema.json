@@ -89,6 +89,10 @@
         "system": {
           "$ref": "#/definitions/secrets"
         }
+        ,
+        "esp": {
+          "$ref": "#/definitions/secrets"
+        }
       },
       "additionalProperties": false
     },
@@ -193,6 +197,15 @@
           },
           "maxJobs": {
             "type": "integer"
+          },
+          "sprayServiceName": {
+            "description": "Optional name of the dafilesrv spray service to use (will default to 1st 'spray' dafilesrv)",
+            "type": "string"
+          },
+          "useFtSlave": {
+            "description": "Use legacy ftslave processes (ran within dfuserver pod)",
+            "type": "boolean",
+            "default": false
           },
           "env": {
             "$ref": "#/definitions/env"
@@ -798,6 +811,10 @@
       "type": "object",
       "additionalProperties": { "type": ["object"] }
     },
+    "authDomain": {
+      "type": "object",
+      "additionalProperties": { "type": ["integer", "string"] }
+    },
     "ldap": {
       "type": "object",
       "required": [ "ldapAddress" ],
@@ -1216,6 +1233,9 @@
         },
         "authNZ": {
           "$ref": "#/definitions/authNZ"
+        },
+        "authDomain": {
+          "$ref": "#/definitions/authDomain"
         },
         "ldap": {
           "$ref": "#/definitions/ldap"
@@ -2457,12 +2477,17 @@
     },
     "dafilesrv": {
       "type": "object",
-      "required": [ "name", "service" ],
+      "required": [ "name", "application", "service" ],
       "additionalProperties": { "type": ["integer", "string", "boolean"] },
       "properties": {
         "name": {
           "type": "string",
           "description": "The name of the dafilesrv process"
+        },
+        "application": {
+          "type": "string",
+          "enum": ["stream", "directio", "spray"],
+          "description": "Application type"
         },
         "service": {
           "$ref": "#/definitions/service"
