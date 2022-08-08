@@ -24,7 +24,7 @@
 {{- $sashaServices := $.Values.sasha | default dict -}}
 {{- if not $sashaServices.disabled -}}
 {{ range $sashaName, $_sasha := $sashaServices -}}
-{{ $sasha := ($_sasha | default dict) -}}
+{{ $sasha := deepCopy ($_sasha | default dict) -}}
 {{- if not $sasha.disabled -}}
 {{- $_ := set $sasha "name" $sashaName -}}
 {{- $_ := set $sasha "access" (splitList " " (include "hpcc.getSashaServiceAccess" $sasha)) -}}
@@ -49,10 +49,11 @@ spec:
   template:
     metadata:
       labels:
+        {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "sasha" "name" "sasha" "instance" $serviceName) | indent 8 }}
         run: {{ $serviceName | quote }}
         server: {{ $serviceName | quote }}
         accessDali: {{ (has "dali" $sasha.access) | ternary "yes" "no" | quote }}
-        helmVersion: 8.8.0
+        helmVersion: 8.8.2
 {{- if hasKey $sasha "labels" }}
 {{ toYaml $sasha.labels | indent 8 }}
 {{- end }}
