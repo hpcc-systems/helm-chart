@@ -73,8 +73,6 @@ mountOptions:
 - file_mode=0600 # user read/write
 {{- if .plane.shareName }}
 - mfsymlinks
-- cache=strict
-- nosharesock
 - nobrl
 {{- end -}}
 {{- end }}
@@ -85,7 +83,6 @@ Pass in dict with root and plane
 */}}
 {{- define "hpcc-azurefile.addStoragePV" -}}
 {{- $common := .root.Values.common -}}
-{{- $shareName := .plane.shareName -}}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -97,18 +94,11 @@ spec:
     storage: {{ .plane.size }}
   accessModes:
     - {{ .plane.rwmany | default false | ternary "ReadWriteMany" "ReadWriteOnce" }}
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: azurefile-csi
-  csi:
-    driver: file.csi.azure.com
+  azureFile:
+    secretName: {{ .plane.secretName | default $common.secretName }}
+    secretNamespace: {{ .plane.secretNamespace | default $common.secretNamespace }}
+    shareName: {{ .plane.shareName }}
     readOnly: false
-    volumeHandle: {{ .plane.volumeId | default (printf "100-%s" $shareName) }}  # make sure this volumeid is unique in the cluster
-    volumeAttributes:
-      resourceGroup: EXISTING_RESOURCE_GROUP_NAME  # optional, only set this when storage account is not in the same resource group as agent node
-      shareName: {{ .plane.shareName }}
-    nodeStageSecretRef:
-      name: {{ .plane.secretName | default $common.secretName }}
-      namespace: {{ .plane.secretNamespace | default $common.secretNamespace }}
   {{- include "hpcc-azurefile.addCommonMountOptions" . | indent 2}}
 {{- end -}}
 
@@ -135,12 +125,11 @@ Create StorageClass
 Pass in dict with root and plane
 */}}
 {{- define "hpcc-azurefile.addStorageSC" -}}
-{{- $common := .root.Values.common -}}
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: {{ include "hpcc-azurefile.SCName" (dict "root" .root "plane" .plane) }}
-provisioner: {{ $common.provisioner }}
+provisioner: kubernetes.io/azure-file
 {{- include  "hpcc-azurefile.addCommonMountOptions" . }}
 parameters:
   skuName: {{ .plane.sku | default "Standard_LRS" }}

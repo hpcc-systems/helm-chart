@@ -1167,8 +1167,7 @@ kind: Service
 metadata:
   name: {{ $lvars.serviceName | quote }}
   labels:
-    helmVersion: 8.8.2
-    {{- include "hpcc.addStandardLabels" (dict "root" $.root "instance" $lvars.serviceName ) | indent 4 }}
+    helmVersion: 8.6.48
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}
 {{- end }}
@@ -1245,50 +1244,6 @@ dali data
 {{- end -}}
 
 {{/*
-A template to generate the standard app.kubernetes.io labels
-
-root name(k8s application name) component(component within the application, can be same as app) instance 
-
-https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/
-----------------------------+-------------------------------------------------------------+----------
-| Label                     | Description                                                 | Example |
-----------------------------+-------------------------------------------------------------+----------
-app.kubernetes.io/name       The name of the application                                   mysql
-app.kubernetes.io/component  The component within the architecture                         database
-app.kubernetes.io/instance   A unique name identifying the instance of an application      mysql-abcxzy
-app.kubernetes.io/version    The current version of the application                        5.7.21
-app.kubernetes.io/part-of    The name of a higher level application this one is part of    wordpress
-app.kubernetes.io/managed-by The tool being used to manage the operation of an application helm
-app.kubernetes.io/created-by The controller/user who created this resource                 controller-manager
-helm.sh/chart                This should be the chart name and version
-*/}}
-{{- define "hpcc.addStandardLabels" }}
-app.kubernetes.io/part-of: HPCC-Platform
-{{- if .name }}
-app.kubernetes.io/name: {{ .name }}
-{{- end }}
-{{- if .component }}
-app.kubernetes.io/component: {{ .component }}
-{{- end }}
-{{- if .instance }}
-app.kubernetes.io/instance: {{ .instance }}
-{{- end }}
-{{- if .root }}
- {{- if hasKey .root "Release" }}
-app.kubernetes.io/managed-by: {{ .root.Release.Service }}
- {{- end }}
- {{- if hasKey .root "Chart" }}
-  {{- if .root.Chart.Version }}
-app.kubernetes.io/version: {{ .root.Chart.Version }}
-   {{- if .root.Chart.Name }}
-helm.sh/chart: {{ .root.Chart.Name }}-{{ .root.Chart.Version | replace "+" "_" }}
-   {{- end }}
-  {{- end }}
- {{- end }}
-{{- end }}
-{{- end }}
-
-{{/*
 A template to generate a PVC
 Pass in dict with root, me, name, and optional path
 */}}
@@ -1298,7 +1253,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ printf "%s-%s" (include "hpcc.fullname" .) .name }}
   labels:
-    {{- include "hpcc.addStandardLabels" (dict "root" $.root "instance" .name "component" "storage") | indent 4 }}
+    app.kubernetes.io/name: {{ printf "%s-%s" (include "hpcc.fullname" .) .name }}
+    app.kubernetes.io/instance: {{ .root.Release.Name }}
+    app.kubernetes.io/managed-by: {{ .root.Release.Service }}
+    helm.sh/chart: {{ include "hpcc.chart" . }}
 spec:
   accessModes:
     - {{ .mode | default .me.storageMode | default "ReadWriteMany" }}
@@ -1374,27 +1332,22 @@ Pass in dict with root, job, target and type
 */}}
 {{- define "hpcc.placementsByJobTargetType" -}}
 {{- if .root.Values.placements }}
- {{- $job := .job -}}
- {{- $target := (printf "target:%s" .target | default "") -}}
- {{- $type := printf "type:%s" .type -}}
- {{- $categories := list "all" $type $target -}}
- {{- $placementsDict := dict -}}
- {{- $placements := .root.Values.placements -}}
- {{- range $category := $categories -}}
-  {{- range $placement := $placements -}}
-   {{- if or (has $category $placement.pods) -}}
-    {{ include "hpcc.mergePlacementSetting" (dict "me" $placement "new" $placementsDict) -}}
-   {{- end -}}
-  {{- end -}}
- {{- end -}}
- {{- range $placement := .root.Values.placements -}}
-  {{- range $jobPattern := $placement.pods -}}
-   {{- if mustRegexMatch $jobPattern $job -}}
-    {{ include "hpcc.mergePlacementSetting" (dict "me" $placement "new" $placementsDict) -}}
-   {{- end -}}
-  {{- end -}}
- {{- end -}}
- {{ include "hpcc.doPlacement" (dict "me" $placementsDict) -}}
+{{- $job := .job -}}
+{{- $target := (printf "target:%s" .target | default "") -}}
+{{- $type := printf "type:%s" .type -}}
+{{- $placementsDict := dict -}}
+{{- range $placement := .root.Values.placements -}}
+{{- if or (has $target $placement.pods) (has $type $placement.pods) (has "all" $placement.pods) -}}
+{{ include "hpcc.mergePlacementSetting" (dict "me" $placement "new" $placementsDict) -}}
+{{- else -}}
+{{- range $jobPattern := $placement.pods -}}
+{{- if mustRegexMatch $jobPattern $job -}}
+{{ include "hpcc.mergePlacementSetting" (dict "me" $placement "new" $placementsDict) -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{ include "hpcc.doPlacement" (dict "me" $placementsDict) -}}
 {{- end -}}
 {{- end -}}
 
@@ -1404,19 +1357,15 @@ Pass in dict with root, pod, target and type
 */}}
 {{- define "hpcc.placementsByPodTargetType" -}}
 {{- if .root.Values.placements }}
- {{- $pod := .pod -}}
- {{- $target := (printf "target:%s" .target | default "") -}}
- {{- $type := printf "type:%s" .type -}}
- {{- $categories := list "all" $type $target $pod -}}
- {{- $placementsDict := dict  -}}
- {{- $placements := .root.Values.placements -}}
- {{- range $category := $categories -}}
-  {{- range $placement := $placements -}}
-   {{- if or (has $category $placement.pods) -}}
-    {{ include "hpcc.mergePlacementSetting" (dict "me" $placement "new" $placementsDict) -}}
-   {{- end -}}
-  {{- end -}}
- {{- end -}}
+{{- $pod := .pod -}}
+{{- $target := (printf "target:%s" .target | default "") -}}
+{{- $type := printf "type:%s" .type -}}
+{{- $placementsDict := dict  -}}
+{{- range $placement := .root.Values.placements -}}
+{{- if or (has $pod $placement.pods) (has $target $placement.pods) (has $type $placement.pods) (has "all"  $placement.pods) -}}
+{{ include "hpcc.mergePlacementSetting" (dict "me" $placement "new" $placementsDict) -}}
+{{- end -}}
+{{- end -}}
 {{ include "hpcc.doPlacement" (dict "me" $placementsDict) -}}
 {{- end -}}
 {{- end -}}
@@ -1435,7 +1384,7 @@ lifecycle:
       - "/bin/bash"
       - "-c"
       - >-
-          k8s_postjob_clearup.sh
+          [ -s tmpdir ] && [ -d $(cat tmpdir) ] && rm -rf $(cat tmpdir) || true
 {{- if and (not $misc.postJobCommandViaSidecar) $postJobCommand }} ;
           {{ $postJobCommand }}
 {{- end }}
@@ -1451,7 +1400,7 @@ args:
 {{- end }}
 - >-
     {{ $check_cmd.command }};
-    k8s_postjob_clearup.sh;
+    [ -s tmpdir ] && [ -d $(cat tmpdir) ] && rm -rf $(cat tmpdir) || true
 {{- if $misc.postJobCommandViaSidecar -}} ;
     touch /wait-and-run/{{ .me.name }}.jobdone
 {{- else if $postJobCommand -}} ;

@@ -89,10 +89,6 @@
         "system": {
           "$ref": "#/definitions/secrets"
         }
-        ,
-        "esp": {
-          "$ref": "#/definitions/secrets"
-        }
       },
       "additionalProperties": false
     },
@@ -198,21 +194,15 @@
           "maxJobs": {
             "type": "integer"
           },
-          "sprayServiceName": {
-            "description": "Optional name of the dafilesrv spray service to use (will default to 1st 'spray' dafilesrv)",
-            "type": "string"
-          },
-          "useFtSlave": {
-            "description": "Use legacy ftslave processes (ran within dfuserver pod)",
-            "type": "boolean",
-            "default": false
-          },
           "env": {
             "$ref": "#/definitions/env"
           },
           "annotations": {
             "type": "object",
             "additionalProperties": { "type": "string" }
+          },
+          "resources": {
+            "$ref": "#/definitions/resources"
           },
           "labels": {
             "type": "object",
@@ -811,10 +801,6 @@
       "type": "object",
       "additionalProperties": { "type": ["object"] }
     },
-    "authDomain": {
-      "type": "object",
-      "additionalProperties": { "type": ["integer", "string"] }
-    },
     "ldap": {
       "type": "object",
       "required": [ "ldapAddress" ],
@@ -928,16 +914,6 @@
         "detail": {
           "type": "integer",
           "description": "Log output verbosity"
-        },
-        "queueLength": {
-          "type": "integer",
-          "description": "Maximum number of log entries to buffer in the log queue. Set to 0 for synchronous logging",
-          "default": 512
-        },
-        "queueDrop": {
-          "type": "integer",
-          "description": "Number of log entries to drop from the log queue when it is full. Disabled if 0, or if queueLength is 0",
-          "default": 0
         }
       },
       "additionalProperties": { "type": ["integer", "string", "boolean"] }
@@ -1243,9 +1219,6 @@
         },
         "authNZ": {
           "$ref": "#/definitions/authNZ"
-        },
-        "authDomain": {
-          "$ref": "#/definitions/authDomain"
         },
         "ldap": {
           "$ref": "#/definitions/ldap"
@@ -2487,17 +2460,12 @@
     },
     "dafilesrv": {
       "type": "object",
-      "required": [ "name", "application", "service" ],
+      "required": [ "name", "service" ],
       "additionalProperties": { "type": ["integer", "string", "boolean"] },
       "properties": {
         "name": {
           "type": "string",
           "description": "The name of the dafilesrv process"
-        },
-        "application": {
-          "type": "string",
-          "enum": ["stream", "directio", "spray"],
-          "description": "Application type"
         },
         "service": {
           "$ref": "#/definitions/service"

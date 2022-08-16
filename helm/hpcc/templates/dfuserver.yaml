@@ -53,10 +53,9 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "dfuserver" "name" "dfuserver" "instance" .name) | indent 8 }}
         run: {{ .name | quote }}
         accessDali: "yes"
-        helmVersion: 8.8.2
+        helmVersion: 8.6.48
 {{- if hasKey . "labels" }}
 {{ toYaml .labels | indent 8 }}
 {{- end }}

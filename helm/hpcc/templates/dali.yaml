@@ -51,7 +51,7 @@ true
 {{- $tmpDaliScope := dict "aggregateSashaSecretsCategories" list "aggregatePlaneCategories" $daliPlaneIncludeCategories "aggregateSashaNamedPlanes" list -}}
 {{- if not ($sashaServices.disabled) -}}
  {{- range $sashaName, $_sasha := $dali.services -}}
-  {{- $sasha := deepCopy ($_sasha | default dict) -}}
+  {{- $sasha := ($_sasha | default dict) -}}
   {{- if not $sasha.disabled -}}
    {{- $_ := set $sasha "name" $sashaName -}}
    {{- $sashaAccess := splitList " " (include "hpcc.getSashaServiceAccess" $sasha) -}}
@@ -80,11 +80,10 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "dali" "name" "dali" "instance" $dali.name) | indent 8 }}
         run: {{ $dali.name | quote }}
         server: {{ $dali.name | quote }}
         app: dali
-        helmVersion: 8.8.2
+        helmVersion: 8.6.48
 {{- if hasKey $.Values.global "metrics" }}
  {{- include "hpcc.generateMetricsReporterLabel" $.Values.global.metrics | nindent 8 }}
 {{- end }}
@@ -128,7 +127,7 @@ spec:
 {{- include "hpcc.addCertificateVolumeMount" (dict "root" $ "name" .name "component" "dali" "external" false) | nindent 8 }}
 {{- if not $sashaServices.disabled -}}
  {{- range $sashaName, $_sasha := $dali.services -}}
-  {{- $sasha := deepCopy ($_sasha | default dict) -}}
+  {{- $sasha := ($_sasha | default dict) -}}
   {{- if not $sasha.disabled -}}
    {{- $_ := set $sasha "name" $sashaName -}}
    {{- $thisServiceCtx := dict -}}
@@ -189,7 +188,7 @@ data:
 ---
 {{- if not $sashaServices.disabled -}}
 {{- range $sashaName, $_sasha := $sashaServices -}}
-{{- $sasha := deepCopy ($_sasha | default dict) -}}
+{{- $sasha := ($_sasha | default dict) -}}
 {{- if not $sasha.disabled -}}
 {{- $_ := set $sasha "name" $sashaName }}
 kind: ConfigMap

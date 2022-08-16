@@ -35,9 +35,9 @@ Pass in dict with root and me
 {{- $thorScope := omit .me "eclagent" "thoragent" "hthor" "logging" "env" "eclAgentResources" "eclAgentUseChildProcesses" "eclAgentReplicas" "thorAgentReplicas" "eclAgentType" }}
 {{- $misc := .root.Values.global.misc | default dict }}
 {{- $postJobCommand := $misc.postJobCommand | default "" }}
-{{- $eclAgentJobName := printf "%s-job-_HPCC_JOBNAME_" $eclAgentType }}
-{{- $thorManagerJobName := printf "thormanager-job-_HPCC_JOBNAME_" }}
-{{- $thorWorkerJobName := printf "thorworker-job-_HPCC_JOBNAME_" }}
+{{- $eclAgentJobName := printf "%s-_HPCC_JOBNAME_" $eclAgentType }}
+{{- $thorManagerJobName := printf "thormanager-_HPCC_JOBNAME_" }}
+{{- $thorWorkerJobName := printf "thorworker-_HPCC_JOBNAME_" }}
 {{- $thorManagerNetworkPolicyName := printf "thormanager-networkpolicy-_HPCC_JOBNAME_" }}
 {{- $thorWorkerNetworkPolicyName := printf "thorworker-networkpolicy-_HPCC_JOBNAME_" }}
 {{- $numWorkersPerPod := .me.numWorkersPerPod | default 1 }}
@@ -70,7 +70,7 @@ data:
 {{ include "hpcc.generateGlobalConfigMap" .root| indent 6 }}
 
 {{- if not .eclAgentUseChildProcesses }}
-  {{ $eclAgentType }}-job.yaml:
+  {{ $eclAgentType }}-jobspec.yaml:
     apiVersion: batch/v1
     kind: Job
     metadata:
@@ -82,8 +82,7 @@ data:
           labels:
             accessDali: "yes"
             accessEsp: "yes"
-            helmVersion: 8.8.2
-            {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "eclagent" "name" "thor" "instance" $eclAgentJobName) | indent 8 }}
+            helmVersion: 8.6.48
 {{- if hasKey .me "labels" }}
 {{ toYaml .me.labels | indent 12 }}
 {{- end }}
@@ -135,7 +134,7 @@ data:
       backoffLimit: 0
 {{- end }}
 
-  thormanager-job.yaml:
+  thormanager-jobspec.yaml:
     apiVersion: batch/v1
     kind: Job
     metadata:
@@ -149,10 +148,9 @@ data:
             accessEsp: "yes"
             app: "thor"
             component: "thormanager"
-            helmVersion: 8.8.2
+            helmVersion: 8.6.48
             instance: "_HPCC_JOBNAME_"
             job: "_HPCC_JOBNAME_"
-            {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "thormanager" "name" "thor" "instance" $thorManagerJobName ) | indent 12 }}
 {{- if hasKey $thorScope "labels" }}
 {{ toYaml $thorScope.labels | indent 12 }}
 {{- end }}
@@ -203,7 +201,7 @@ data:
           restartPolicy: Never
       backoffLimit: 0
 
-  thorworker-job.yaml:
+  thorworker-jobspec.yaml:
     apiVersion: batch/v1
     kind: Job
     metadata:
@@ -217,10 +215,9 @@ data:
             accessEsp: "true"
             app: "thor"
             component: "thorworker"
-            helmVersion: 8.8.2
+            helmVersion: 8.6.48
             instance: "_HPCC_JOBNAME_"
             job: "_HPCC_JOBNAME_"
-            {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "thorworker" "name" "thor" "instance" $thorWorkerJobName ) | indent 12 }}
 {{- if hasKey $thorScope "labels" }}
 {{ toYaml $thorScope.labels | indent 12 }}
 {{- end }}
@@ -274,7 +271,7 @@ data:
           restartPolicy: Never
       backoffLimit: 0
 
-  thormanager-networkpolicy.yaml:
+  thormanager-networkspec.yaml:
     apiVersion: networking.k8s.io/v1
     kind: NetworkPolicy
     metadata:
@@ -297,7 +294,7 @@ data:
               app: thor
               job: "_HPCC_JOBNAME_"
 
-  thorworker-networkpolicy.yaml:
+  thorworker-networkspec.yaml:
     apiVersion: networking.k8s.io/v1
     kind: NetworkPolicy
     metadata:
@@ -351,9 +348,8 @@ spec:
         accessEsp: {{ $commonCtx.eclAgentUseChildProcesses | ternary "yes" "no" | quote }}
         app: "thor"
         component: "thor-eclagent"
-        helmVersion: 8.8.2
+        helmVersion: 8.6.48
         instance: {{ $commonCtx.eclAgentName | quote }}
-        {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "eclagent" "name" "thor" "instance" $commonCtx.eclAgentName ) | indent 8 }}
 {{- if hasKey $commonCtx.me "labels" }}
 {{ toYaml $commonCtx.me.labels | indent 8 }}
 {{- end }}
@@ -413,9 +409,8 @@ spec:
         accessEsp: "no"
         app: "thor"
         component: "thor-thoragent"
-        helmVersion: 8.8.2
+        helmVersion: 8.6.48
         instance: {{ $commonCtx.thorAgentName | quote }}
-        {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "eclagent" "name" "thor" "instance" $commonCtx.thorAgentName ) | indent 8 }}
 {{- if hasKey $commonCtx.me "labels" }}
 {{ toYaml $commonCtx.me.labels | indent 8 }}
 {{- end }}

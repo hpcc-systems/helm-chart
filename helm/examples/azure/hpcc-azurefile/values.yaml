@@ -3,7 +3,6 @@ common:
   mountPrefix: "/var/lib/HPCCSystems"
   #secretName: "azure-secret"
   #secretNamespace: "default"
-  provisioner: "file.csi.azure.com" # Set to "kubernetes.io/azure-file" if not using the csi driver but it is not recommended.
 
 planes:
 - name: dali
@@ -12,7 +11,6 @@ planes:
   category: dali
   #sku: "Standard_LRS"
   #shareName: dalishare
-  #volumeId: "100-dali"
   #secretName: "dali-secret"
   #secretNamespace: "dali-ns"
 - name: dll
@@ -22,7 +20,6 @@ planes:
   rwmany: true
   #sku: "Standard_LRS"
   #shareName: dllsshare
-  #volumeId: "100-queries"
 - name: sasha
   subPath: sasha
   size: 1Gi
@@ -30,7 +27,6 @@ planes:
   category: sasha
   #sku: "Standard_LRS"
   #shareName: sashashare
-  #volumeId: "100-sasha"
 - name: data
   subPath: hpcc-data # cannot currently be changed
   size: 3Gi
@@ -38,7 +34,6 @@ planes:
   rwmany: true
   #sku: "Standard_LRS"
   #shareName: datashare
-  #volumeId: "100-data"
 - name: mydropzone
   subPath: dropzone
   size: 1Gi
@@ -46,4 +41,3 @@ planes:
   category: lz
   #sku: "Standard_LRS"
   #shareName: lzshare
-  #volumeId: "100-mydropzone"
