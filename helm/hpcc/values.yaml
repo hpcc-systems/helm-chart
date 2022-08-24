@@ -288,6 +288,8 @@ secrets:
   authn: {}
     ## Category to deploy authentication secrets to container, and to create a key name alias to reference those secrets
     #ldapadmincredskey: "admincredssecretname"  ## Default k/v for LDAP authentication secrets
+    #testauthusercreds1: "testauthusercreds1"            ## Default k/v for test authentication secrets
+    #testauthusercreds2: "testauthusercreds2"            ## Default k/v for test authentication secrets
 
   ecl: {}
     ## Category for secrets published to all components that run ecl.  These secrets are for use by internal
@@ -359,7 +361,7 @@ bundles: []
 # for example
 # - name: DataPatterns
 
-# A dafilsrv 'stream' service is required to expose HPCC file access to 3rd parties (e.g. Spark / Java)
+# A dafilesrv 'stream' service is required to expose HPCC file access to 3rd parties (e.g. Spark / Java)
 # Access will only be granted to requests that have been signed by the DFUFileAccess service
 dafilesrv:
 - name: rowservice
@@ -377,6 +379,12 @@ dafilesrv:
   application: directio
   service:
     servicePort: 7200
+    visibility: local
+    
+- name: spray-service
+  application: spray
+  service:
+    servicePort: 7300
     visibility: local
     
 
