@@ -68,7 +68,7 @@ spec:
         server: {{ $servername | quote }}
         accessDali: "yes"
         accessEsp: "yes"
-        helmVersion: 8.8.6
+        helmVersion: 8.8.8
         {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "roxie-server" "name" "roxie" "instance" $roxie.name) | indent 8 }}
 {{- if hasKey . "labels" }}
 {{ toYaml .labels | indent 8 }}
@@ -90,7 +90,7 @@ spec:
         command: [ {{ include "hpcc.componentCommand" (dict "me" $roxie "root" $ "process" "roxie") }} ] 
         args: [ {{- include "hpcc.componentStartArgs" (dict "me" $roxie "root" $ "process" "roxie") | nindent 16 }}
                 {{ include "hpcc.configArg" $roxie }},
-                {{ include "hpcc.daliArg" $ }},
+                {{ include "hpcc.daliArg" (dict "root" $ "component" "Local Roxie" "optional" false) }},
                 "--server=true", 
                 "--localAgent=true",
                 "--resolveLocally=false"

@@ -82,7 +82,7 @@ data:
           labels:
             accessDali: "yes"
             accessEsp: "yes"
-            helmVersion: 8.8.6
+            helmVersion: 8.8.8
             {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "eclagent" "name" "thor" "instance" $eclAgentJobName) | indent 8 }}
 {{- if hasKey .me "labels" }}
 {{ toYaml .me.labels | indent 12 }}
@@ -108,7 +108,7 @@ data:
 {{- include "hpcc.addSecurityContext" . | indent 12 }}
 {{ include "hpcc.addImageAttrs" . | indent 12 }}
 {{- include "hpcc.addResources" (dict "me" .eclAgentResources) | indent 12 }}
-{{- $agentCmd := printf "%s %s %s _HPCC_ARGS_" $eclAgentType (include "hpcc.configArg" .me) (include "hpcc.daliArg" .root) }}
+{{- $agentCmd := printf "%s %s %s _HPCC_ARGS_" $eclAgentType (include "hpcc.configArg" .me) (include "hpcc.daliArg" (dict "root" .root "component" "Thor" "optional" false)) }}
 {{ include "hpcc.addCommandAndLifecycle" (. | merge (dict "command" $agentCmd)) | indent 12 }}
 {{- if .env }}
             env:
@@ -149,7 +149,7 @@ data:
             accessEsp: "yes"
             app: "thor"
             component: "thormanager"
-            helmVersion: 8.8.6
+            helmVersion: 8.8.8
             instance: "_HPCC_JOBNAME_"
             job: "_HPCC_JOBNAME_"
             {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "thormanager" "name" "thor" "instance" $thorManagerJobName ) | indent 12 }}
@@ -177,7 +177,7 @@ data:
 {{- include "hpcc.addSecurityContext" . | indent 12 }}
 {{ include "hpcc.addImageAttrs" . | indent 12 }}
 {{- include "hpcc.addResources" (dict "me" $thorScope.managerResources) | indent 12 }}
-{{- $thorManagerCmd := printf "thormaster_lcr %s %s _HPCC_ARGS_" (include "hpcc.configArg" .me) (include "hpcc.daliArg" .root) }}
+{{- $thorManagerCmd := printf "thormaster_lcr %s %s _HPCC_ARGS_" (include "hpcc.configArg" .me) (include "hpcc.daliArg" (dict "root" .root "component" "Thor" "optional" false)) }}
 {{ include "hpcc.addCommandAndLifecycle" (. | merge (dict "command" $thorManagerCmd)) | indent 12 }}
 {{- if .env }}
             env:
@@ -217,7 +217,7 @@ data:
             accessEsp: "true"
             app: "thor"
             component: "thorworker"
-            helmVersion: 8.8.6
+            helmVersion: 8.8.8
             instance: "_HPCC_JOBNAME_"
             job: "_HPCC_JOBNAME_"
             {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "thorworker" "name" "thor" "instance" $thorWorkerJobName ) | indent 12 }}
@@ -247,7 +247,7 @@ data:
 {{- include "hpcc.addSecurityContext" $configCtx | indent 12 }}
 {{ include "hpcc.addImageAttrs" $configCtx | indent 12 }}
 {{- include "hpcc.addResources" (dict "me" $thorScope.workerResources) | indent 12 }}
-{{- $thorWorkerCmd := printf "thorslave_lcr %s %s _HPCC_ARGS_ --slaveport=%d" (include "hpcc.configArg" $configCtx.me) (include "hpcc.daliArg" $configCtx.root) $slavePort }}
+{{- $thorWorkerCmd := printf "thorslave_lcr %s %s _HPCC_ARGS_ --slaveport=%d" (include "hpcc.configArg" $configCtx.me) (include "hpcc.daliArg" (dict "root" $configCtx.root "component" "Thor" "optional" false)) $slavePort }}
 {{ include "hpcc.addCommandAndLifecycle" ($configCtx | merge (dict "command" $thorWorkerCmd)) | indent 12 }}
 {{- if $configCtx.me.env }}
             env:
@@ -351,7 +351,7 @@ spec:
         accessEsp: {{ $commonCtx.eclAgentUseChildProcesses | ternary "yes" "no" | quote }}
         app: "thor"
         component: "thor-eclagent"
-        helmVersion: 8.8.6
+        helmVersion: 8.8.8
         instance: {{ $commonCtx.eclAgentName | quote }}
         {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "eclagent" "name" "thor" "instance" $commonCtx.eclAgentName ) | indent 8 }}
 {{- if hasKey $commonCtx.me "labels" }}
@@ -372,7 +372,7 @@ spec:
         command: [ {{ include "hpcc.componentCommand" (dict "me" . "root" $ "process" "agentexec") }} ] 
         args: [ {{- include "hpcc.componentStartArgs" (dict "me" . "root" $ "process" "agentexec") | nindent 16 }}
                 {{ include "hpcc.configArg" . }},
-                {{ include "hpcc.daliArg" $ }},
+                {{ include "hpcc.daliArg" (dict "root" $ "component" "Thor" "optional" false) }},
                 {{ printf "\"--name=%s\"" .name }}
               ]
         env:
@@ -413,7 +413,7 @@ spec:
         accessEsp: "no"
         app: "thor"
         component: "thor-thoragent"
-        helmVersion: 8.8.6
+        helmVersion: 8.8.8
         instance: {{ $commonCtx.thorAgentName | quote }}
         {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "eclagent" "name" "thor" "instance" $commonCtx.thorAgentName ) | indent 8 }}
 {{- if hasKey $commonCtx.me "labels" }}
@@ -435,7 +435,7 @@ spec:
         args: [ {{- include "hpcc.componentStartArgs" (dict "me" . "root" $ "process" "agentexec") | nindent 16 }}
                 {{ include "hpcc.configArg" . }},
                 {{ "\"--componentTag=thoragent\"" }},
-                {{ include "hpcc.daliArg" $ }},
+                {{ include "hpcc.daliArg" (dict "root" $ "component" "Thor" "optional" false) }},
                 {{ printf "\"--name=%s\"" .name }}
               ]
         env:
