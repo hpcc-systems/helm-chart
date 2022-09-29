@@ -573,6 +573,12 @@ vaults:
     {{- if index $vault "client-secret" }}
       client-secret: {{ index $vault "client-secret" }}
     {{- end -}}
+    {{- if index $vault "appRoleId" }}
+      appRoleId: {{ index $vault "appRoleId" }}
+    {{- end -}}
+    {{- if index $vault "appRoleSecret" }}
+      appRoleSecret: {{ index $vault "appRoleSecret" }}
+    {{- end -}}
   {{- end -}}
  {{- end -}}
 {{- end -}}
@@ -926,7 +932,7 @@ Generate service entries for TLS
   tls: {{ (hasKey $issuer "enabled" | ternary $issuer.enabled true) }}
   issuer: {{ $issuerName }}
   selfSigned: {{ (hasKey $issuerSpec "selfSigned") }}
-  caCert: {{ (or (hasKey $issuerSpec "ca") (hasKey $issuerSpec "vault")) }}
+  caCert: {{ (not (hasKey $issuerSpec "selfSigned")) }}
         {{- end -}}
       {{- end -}}
     {{- end }}
@@ -1172,7 +1178,7 @@ kind: Service
 metadata:
   name: {{ $lvars.serviceName | quote }}
   labels:
-    helmVersion: 8.8.12
+    helmVersion: 8.8.14
     {{- include "hpcc.addStandardLabels" (dict "root" $.root "instance" $lvars.serviceName ) | indent 4 }}
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}
