@@ -221,7 +221,14 @@ storage:
   {{- if and (eq "data" $plane.category) (not $plane.defaultSprayParts) -}}
    {{- $_ := set $planeYaml "defaultSprayParts" (include "hpcc.getMaxNumWorkers" $ | int) -}}
   {{- end -}}
-
+  {{- /* Make sure there is enough containers provided if storageapi used*/ -}}
+  {{- if $plane.storageapi -}}
+   {{- $numDevices := int ( $plane.numDevices | default $plane.numDevices | default 1 ) }}
+   {{- $numContainers := len ($plane.storageapi.containers | default list) -}}
+   {{- if ne $numDevices $numContainers -}}
+    {{- $_ := fail (printf "Storage plane '%s' requires %d containers under storageapi" $plane.name $numDevices) -}}
+   {{- end -}}
+  {{- end -}}
   {{- /* Remove pvc-related properties from the aliases*/ -}}
   {{- if $plane.aliases }}
    {{- $_ := set $planeYaml "aliases" (deepCopy $plane.aliases) -}}
@@ -1001,12 +1008,13 @@ Generate list of available services
 {{ end -}}
 {{ end -}}
 {{ end -}}
-{{- range $.Values.dafilesrv -}}
+{{- range $dafilesrv := $.Values.dafilesrv -}}
  {{- if not .disabled }}
 - name: {{ .name }}
   type: {{ .application | default "stream" }}
   port: {{ .service.servicePort | default 7600 }}
   public: {{ (ne ( include "hpcc.isVisibilityPublic" (dict "root" $ "visibility" .service.visibility))  "") | ternary "true" "false" }}
+  {{- include "hpcc.addTLSServiceEntries" (dict "root" $ "service" $dafilesrv.service "component" $dafilesrv "visibility" $dafilesrv.service.visibility) }}
  {{ end -}}
 {{ end -}}
 {{- end -}}
@@ -1178,7 +1186,7 @@ kind: Service
 metadata:
   name: {{ $lvars.serviceName | quote }}
   labels:
-    helmVersion: 8.8.18
+    helmVersion: 8.10.2
     {{- include "hpcc.addStandardLabels" (dict "root" $.root "instance" $lvars.serviceName ) | indent 4 }}
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}

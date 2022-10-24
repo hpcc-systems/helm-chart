@@ -168,6 +168,11 @@ storage:
   #   defaultSprayParts: 4                  # The number of partitions created when spraying (default: 1)
   #   cost:                                 # The storage cost
   #     storageAtRest: 0.0135               # Storage at rest cost: cost per GiB/month
+  #   storageapi:                           # Optional information to allow access to storage api
+  #     type: azurefile | azureblob
+  #     account: <account-name>             # azure storage account name
+  #     secret: <secret-for-sas-token>      # secret name (under secrets/storage) for accessing SAS token
+  #     containers: [ <container-list> ]    # a list of containers
 
   - name: dali
     storageClass: ""
@@ -208,7 +213,7 @@ storage:
 ## The Certificate issuers are divided into "local" (those which will be used for local mutual TLS) and "public" those
 ## which will be publicly accessible and therefore need to be recognized by browsers and/or other entities.
 ##
-## Both public and local issuers have a spec section. The contents of the "spec" are documented in the cer-manager
+## Both public and local issuers have a spec section. The contents of the "spec" are documented in the cert-manager
 ## "Issuer configuration" documentation. https://cert-manager.io/docs/configuration/#supported-issuer-types
 ##
 ## The default configuration is meant to provide reasonable functionality without additional dependencies.
@@ -385,7 +390,7 @@ dafilesrv:
   application: spray
   service:
     servicePort: 7300
-    visibility: local
+    visibility: cluster
     
 
 dali:
