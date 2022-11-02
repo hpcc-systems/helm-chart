@@ -1011,6 +1011,7 @@ Generate list of available services
 {{- range $dafilesrv := $.Values.dafilesrv -}}
  {{- if not .disabled }}
 - name: {{ .name }}
+  class: dafilesrv
   type: {{ .application | default "stream" }}
   port: {{ .service.servicePort | default 7600 }}
   public: {{ (ne ( include "hpcc.isVisibilityPublic" (dict "root" $ "visibility" .service.visibility))  "") | ternary "true" "false" }}
@@ -1186,7 +1187,7 @@ kind: Service
 metadata:
   name: {{ $lvars.serviceName | quote }}
   labels:
-    helmVersion: 8.10.2
+    helmVersion: 8.10.4
     {{- include "hpcc.addStandardLabels" (dict "root" $.root "instance" $lvars.serviceName ) | indent 4 }}
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}
