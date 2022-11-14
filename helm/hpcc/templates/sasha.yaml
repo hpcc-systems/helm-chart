@@ -52,7 +52,7 @@ spec:
         run: {{ $serviceName | quote }}
         server: {{ $serviceName | quote }}
         accessDali: {{ (has "dali" $sasha.access) | ternary "yes" "no" | quote }}
-        helmVersion: 8.10.4
+        helmVersion: 8.10.6
 {{- if hasKey $sasha "labels" }}
 {{ toYaml $sasha.labels | indent 8 }}
 {{- end }}
@@ -95,4 +95,6 @@ kind: ConfigMap
 {{ include "hpcc.generateConfig" ($commonCtx | merge (dict "configMapHelper" "hpcc.sashaConfigMap")) }}
 ---
 {{ include "hpcc.addCertificate" (dict "root" $ "name" $sashaName "component" "sasha" "external" false) }}
+---
+{{ include "hpcc.addEgress" (dict "root" $ "me" $sasha "labels" $serviceName) }}
 {{- end }}

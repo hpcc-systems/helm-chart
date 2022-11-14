@@ -68,7 +68,7 @@ spec:
         server: {{ $servername | quote }}
         accessDali: "yes"
         accessEsp: "yes"
-        helmVersion: 8.10.4
+        helmVersion: 8.10.6
         {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "roxie-server" "name" "roxie" "instance" $roxie.name) | indent 8 }}
 {{- if hasKey . "labels" }}
 {{ toYaml .labels | indent 8 }}
@@ -140,6 +140,8 @@ kind: ConfigMap
 {{ include "hpcc.addCertificate" (dict "root" $ "name" $roxie.name "services" $roxie.services "component" "localroxie" "external" false) }}
 {{ include "hpcc.addCertificate" (dict "root" $ "name" $roxie.name "services" $roxie.services "component" "localroxie" "external" true) }}
 {{ include "hpcc.addUDPCertificate" (dict "root" $ "name" $roxie.name "component" "localudpkey") }}
+---
+{{ include "hpcc.addEgress" $commonCtx }}
 
 {{- end }}
 {{- end }}

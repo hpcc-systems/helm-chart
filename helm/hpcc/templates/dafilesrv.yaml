@@ -50,7 +50,7 @@ spec:
       labels:
         {{- include "hpcc.addStandardLabels" (dict "root" $ "component" "dafilesrv" "name" "dafilesrv" "instance" .name) | indent 8 }}
         server: {{ .name | quote }}
-        helmVersion: 8.10.4
+        helmVersion: 8.10.6
       annotations:
         checksum/config: {{ $configSHA }}
     spec:
@@ -148,5 +148,7 @@ spec:
  {{- end -}}
  {{- $_ := set $networkPolicyCtx "firstSprayService" false -}}
 {{- end }}
+---
+{{ include "hpcc.addEgress" $commonCtx }}
 {{- end }}
 {{- end }}

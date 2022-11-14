@@ -55,10 +55,10 @@ data:
       template:
         metadata:
           labels:
-            {{- include "hpcc.addStandardLabels" (dict "root" $ "component" $apptype "name" "eclagent" "instance" $appJobName) | indent 12 }}
+            {{- include "hpcc.addStandardLabels" (dict "root" $ "component" $apptype "name" "eclagent" "instance" $appJobName "instanceOf" (printf "%s-job" .me.name)) | indent 12 }}
             accessDali: "yes"
             accessEsp: "yes"
-            helmVersion: 8.10.4
+            helmVersion: 8.10.6
 {{- if hasKey .me "labels" }}
 {{ toYaml .me.labels | indent 12 }}
 {{- end }}
@@ -135,7 +135,7 @@ spec:
         run: {{ .name | quote }}
         accessDali: "yes"
         accessEsp: {{ .useChildProcesses | default false | ternary "yes" "no" | quote }}
-        helmVersion: 8.10.4
+        helmVersion: 8.10.6
 {{- if hasKey . "labels" }}
 {{ toYaml .labels | indent 8 }}
 {{- end }}
@@ -186,6 +186,8 @@ kind: ConfigMap
 ---
 {{ include "hpcc.addCertificate" (dict "root" $ "name" .name "component" "eclagent") }}
 {{ include "hpcc.addCertificate" (dict "root" $ "name" .name "component" $apptype) }}
-
+---
+{{- $egressedPodLabels := list (ternary .name (printf "%s-job" .name) (.useChildProcesses | default false)) -}}
+{{- include "hpcc.addEgress" (dict "root" $ "me" . "labels" $egressedPodLabels) | nindent 0 -}}
 {{- end }}
 {{- end }}
