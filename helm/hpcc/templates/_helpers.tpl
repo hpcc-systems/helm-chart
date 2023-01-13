@@ -254,6 +254,10 @@ cost:
 logAccess:
 {{ toYaml .Values.global.logAccess | indent 2 }}
 {{- end }}
+{{- if .Values.global.expert }}
+expert:
+{{ toYaml .Values.global.expert | indent 2 }}
+{{- end }}
 {{- end -}}
 
 {{/*
@@ -1190,7 +1194,7 @@ kind: Service
 metadata:
   name: {{ $lvars.serviceName | quote }}
   labels:
-    helmVersion: 8.10.14
+    helmVersion: 8.10.16
     {{- include "hpcc.addStandardLabels" (dict "root" $.root "instance" $lvars.serviceName ) | indent 4 }}
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}
