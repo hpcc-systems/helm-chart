@@ -1194,7 +1194,7 @@ kind: Service
 metadata:
   name: {{ $lvars.serviceName | quote }}
   labels:
-    helmVersion: 8.10.16
+    helmVersion: 8.10.18
     {{- include "hpcc.addStandardLabels" (dict "root" $.root "instance" $lvars.serviceName ) | indent 4 }}
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}
@@ -2109,6 +2109,7 @@ spec:
   - Egress
   egress:
 {{ toYaml $lvars.egress | indent 2 }}
+---
 {{- end -}}
 {{- end -}}
 
