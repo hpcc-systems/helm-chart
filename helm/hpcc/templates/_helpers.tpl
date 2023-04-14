@@ -1197,7 +1197,7 @@ kind: Service
 metadata:
   name: {{ $lvars.serviceName | quote }}
   labels:
-    helmVersion: 8.10.34
+    helmVersion: 8.10.36
     {{- include "hpcc.addStandardLabels" (dict "root" $.root "instance" $lvars.serviceName ) | indent 4 }}
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}
@@ -2126,3 +2126,18 @@ spec:
 {{- end -}}
 {{- end -}}
 
+{{/*
+Pass in dict with root and me
+Fills "result" dictionary with "planeCategories" and "namedPlanes"
+*/}}
+{{- define "hpcc.getEnginePlanes" -}}
+{{- $planeCategories := list "lz" "data" "remote" "dll" "debug" -}}
+{{- $namedPlanes := list -}}
+{{- if not .me.spillPlane -}}
+ {{- $namedPlanes = append $namedPlanes (include "hpcc.getDefaultSpillPlane" .root) -}}
+{{- else -}}
+ {{- $namedPlanes = append $namedPlanes .me.spillPlane -}}
+{{- end -}}
+{{- $_ := set .result "planeCategories" $planeCategories -}}
+{{- $_ := set .result "namedPlanes" $namedPlanes -}}
+{{- end -}}
