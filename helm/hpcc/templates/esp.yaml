@@ -116,7 +116,7 @@ spec:
         server: {{ .name | quote }}
         accessDali: "yes"
         app: {{ $application }}
-        helmVersion: 8.10.44
+        helmVersion: 8.10.46
         {{- include "hpcc.addStandardLabels" (dict "root" $ "name" $application "component" "esp" "instance" .name) | indent 8 }}
 {{- if hasKey $.Values.global "metrics" }}
  {{- include "hpcc.generateMetricsReporterLabel" $.Values.global.metrics | nindent 8 }}
@@ -186,7 +186,7 @@ kind: ConfigMap
  {{- $_ := set $service "labels" dict -}}
 {{- end -}}
 {{- $_ := set $service "labels" (merge $service.labels (dict "server" $application)) -}}
-{{ include "hpcc.addService" ( dict "root" $ "name" .name "service" $service "selector" .name "defaultPort" 8880 ) }}
+{{ include "hpcc.addService" ( dict "root" $ "name" .name "service" $service "selector" .name "defaultPort" 8880 "appProtocolHTTP" true "remoteClients" .remoteClients) }}
 ---
 {{ include "hpcc.addEgress" $commonCtx }}
 {{- end }}
