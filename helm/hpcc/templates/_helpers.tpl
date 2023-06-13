@@ -1208,7 +1208,7 @@ kind: Service
 metadata:
   name: {{ $lvars.serviceName | quote }}
   labels:
-    helmVersion: 8.10.48
+    helmVersion: 8.10.50
     {{- include "hpcc.addStandardLabels" (dict "root" $.root "instance" $lvars.serviceName ) | indent 4 }}
 {{- if $lvars.labels }}
 {{ toYaml $lvars.labels | indent 4 }}
@@ -2006,8 +2006,8 @@ A template to output a merged environment. Pass in a list with global then local
 {{- $_ := set $result .name .value -}}
 {{- end -}}
 {{- range $key,$value := $result -}}
-- name: {{ $key }}
-  value: {{ $value }}
+- name: {{ $key | quote }}
+  value: {{ $value | quote }}
 {{ end -}}
 {{- end -}}
 
