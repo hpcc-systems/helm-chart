@@ -76,4 +76,4 @@ When running under K8s, Roxie has 3 fundamental modes of operation:
      There will be numChannels*replicas agent pods and serverReplicas server pods in total
   
      This mode is somewhat experimental at present!
-  
+
