@@ -900,17 +900,6 @@ entries:
     - https://hpcc-systems.github.io/helm-chart/hpcc-10.0.0-rc1.tgz
     version: 10.0.0-rc1
   - apiVersion: v2
-    appVersion: 9.14.54-rc1
-    created: "2026-01-23T17:47:06.755988634Z"
-    description: A Helm chart for launching a HPCC cluster using Kubernetes
-    digest: 3ec44b14663a5013b880d3a4091652f04b9b1796ab27a179b4570118221495e6
-    icon: https://hpccsystems.com/sites/default/files/header-logo_0.png
-    name: hpcc
-    type: application
-    urls:
-    - https://hpcc-systems.github.io/helm-chart/hpcc-9.14.54-rc1.tgz
-    version: 9.14.54-rc1
-  - apiVersion: v2
     appVersion: 9.14.52-rc2
     created: "2026-01-23T17:47:06.753108482Z"
     description: A Helm chart for launching a HPCC cluster using Kubernetes
