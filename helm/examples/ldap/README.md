@@ -13,7 +13,7 @@ Note that the LDAP Administrator account performs AD directory searches and modi
    The LDAP Administrator "username" and "password" key/values are required; additional properties are allowed but ignored.
 
 ```bash
-   kubectl create secret generic admincredssecretname --from-literal=username=hpcc_admin --from-literal=password=t0pS3cr3tP@ssw0rd
+   kubectl create secret generic admincredssecretname --from-literal=username=hpcc_admin --from-literal=password="<password>"
    kubectl get secret admincredssecretname
 ```
 For more details on how to create secrets, see the "secrets" examples in the "HPCC-Platform/helm/examples/secrets" folder.
